@@ -1,0 +1,1 @@
+from .good import Good

@@ -1,0 +1,53 @@
+version: "3"
+services:
+  api:
+    build: ./api
+    ports:
+      - "5000:5000"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=$RABBITMQ_DEFAULT_USER # set in .env file
+      - RABBITMQ_DEFAULT_PASS=$RABBITMQ_DEFAULT_PASS # set in .env file
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis-data:/data
+
+  flower:
+    image: mher/flower
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=amqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
+
+  parser_worker:
+    build:
+      context: ./parser
+      dockerfile: ./parser/Dockerfile
+    command: celery -A parser_worker worker -l info -Q parser -n parser_worker@%h --concurrency=4
+    environment:
+      - CELERY_BROKER_URL=pyamqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - rabbitmq
+      - redis
+
+  scraper_worker:
+    build:
+      context: ./scraper
+      dockerfile: ./scraper/Dockerfile
+    command: celery -A scraper_worker worker -l info -Q scraper -n scraper_worker@%h --concurrency=4
+    environment:
+      - CELERY_BROKER_URL=pyamqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - rabbitmq
+      - redis
