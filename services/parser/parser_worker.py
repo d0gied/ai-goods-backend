@@ -1,3 +1,4 @@
+from parser.config import CELERY_BROKER_URL, CELERY_RESULT_BACKEND
 from parser.parsers.alibaba import AlibabaParser
 from parser.parsers.ozon import OZONParser
 from parser.parsers.wildberries import WildberriesParser
@@ -5,8 +6,6 @@ from parser.tasks.get_good import get_good_from_source_task_builder
 from parser.tasks.get_goods import get_goods_from_source_task_builder
 
 from celery import Celery
-
-from config import CELERY_BROKER_URL, CELERY_RESULT_BACKEND
 
 app = Celery(
     __name__,

@@ -1,8 +1,7 @@
+from parser.config import CELERY_BROKER_URL, CELERY_RESULT_BACKEND
 from parser.tasks.get_goods import GetGoodsTask
 
 from celery import Celery
-
-from config import CELERY_BROKER_URL, CELERY_RESULT_BACKEND
 
 app = Celery(
     __name__,
