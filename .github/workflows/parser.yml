@@ -15,7 +15,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.12
@@ -24,6 +23,7 @@ jobs:
           python-version: "3.12"
       - name: Go to parser directory
         run: cd services/parser
+        working-directory: /Users/d0gied/code/work/ai-goods-backend/services/parser
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -48,3 +48,4 @@ jobs:
         run: /
           pip install pytest
           pytest
+  
