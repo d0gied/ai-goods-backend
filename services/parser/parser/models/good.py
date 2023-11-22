@@ -1,11 +1,17 @@
-from pydantic import BaseModel
 from datetime import datetime
+from typing import Any
+
+from pydantic import BaseModel, Field
+from typing_extensions import Literal
+
 
 class Good(BaseModel):
-    id: str
-    name: str
-    loaded_at: datetime | None = None
+    id: str = Field(..., description="Good ID")
+    name: str = Field(..., description="Good name")
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
     price: float = None
+    currency: str = None
     old_price: float = None
     images: list = None
     description: str = None
@@ -28,4 +34,3 @@ class Good(BaseModel):
     seller_is_verified: bool = None
     seller_is_official: bool = None
     seller_is_store: bool = None
-
