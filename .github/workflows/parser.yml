@@ -23,7 +23,7 @@ jobs:
           python-version: "3.12"
       - name: Go to parser directory
         run: cd services/parser
-        working-directory: /Users/d0gied/code/work/ai-goods-backend/services/parser
+        working-directory: ./services/parser
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
