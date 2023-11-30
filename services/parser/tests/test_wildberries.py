@@ -4,11 +4,12 @@ import warnings
 
 
 def test_get_goods():
-    return warnings.warn("Not implemented")
+    # return warnings.warn("Not implemented")
     parser = WildberriesParser()
-    goods = parser.get_goods("request", limit=10)
+    goods = parser.get_goods("Карандаш", limit=10)
     assert isinstance(goods, list)
     assert all(isinstance(good, Good) for good in goods)
+    assert goods
     assert len(goods) <= 10
 
 
