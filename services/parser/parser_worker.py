@@ -20,8 +20,8 @@ sources = {
 }
 
 for source, parser in sources.items():
-    app.register_task(get_goods_from_source_task_builder(source, parser), queue="parse")
-    app.register_task(get_good_from_source_task_builder(source, parser), queue="parse")
+    app.register_task(get_goods_from_source_task_builder(source, parser), queue=f"parse_{source}")
+    app.register_task(get_good_from_source_task_builder(source, parser), queue=f"parse_{source}")
 
 if __name__ == "__main__":
     app.start()

@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "vector-storage"
+version = "0.1.0"
+description = ""
+authors = ["d0gied <german.n.u@mail.ru>"]
+readme = "README.md"
+packages = [{include = "vector_storage"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+global_modules = { path = "../global_modules" }
+faiss-cpu = "^1.7.4"
+langchain = "^0.0.344"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

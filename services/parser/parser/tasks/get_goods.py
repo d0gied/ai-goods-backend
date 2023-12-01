@@ -59,7 +59,7 @@ class GetGoodsTask(BaseTask):
                 f"parser.tasks.get_goods.{source.value}",
                 args=[request],
                 kwargs={"limit": limit_per_source},
-                queue="parse",
+                queue=f"parse_{source.value}",
             )
 
         goods: dict[str, dict] = {}

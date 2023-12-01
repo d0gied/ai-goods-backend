@@ -6,6 +6,7 @@ authors = ["d0gied <german.n.u@mail.ru>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
+global_modules = { path="../global_modules" }
 python = "^3.12"
 selenium = "^4.15.2"
 aiohttp = "^3.9.0"
