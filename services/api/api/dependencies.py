@@ -9,4 +9,3 @@ def get_celery_app():
         backend=CELERY_RESULT_BACKEND,
     )
     return celery_app
-
