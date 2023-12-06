@@ -1,4 +1,4 @@
-from parser.models import Good
+from ..models import Good
 from .base import Parser
 import requests
 from tqdm import tqdm
@@ -6,9 +6,9 @@ import datetime
 
 
 class WildberriesParser(Parser):
-    """ Wildberries parser """
+    """Wildberries parser"""
 
-    def make_basket(self, e): #NOTE do it prittier
+    def make_basket(self, e):  # NOTE do it prittier
         if 0 <= e <= 143:
             t = "01"
         elif 144 <= e <= 287:
@@ -76,11 +76,11 @@ class WildberriesParser(Parser):
                 return goods
 
         return goods
-    
+
     def parse_by_link(self, link: str):
-        id = link.split('/')[4]
-        request = f'https://card.wb.ru/cards/v1/detail?appType=1&curr=rub&dest=-1257786&spp=28&nm={id}'
-        
+        id = link.split("/")[4]
+        request = f"https://card.wb.ru/cards/v1/detail?appType=1&curr=rub&dest=-1257786&spp=28&nm={id}"
+
         response = requests.get(url=request)
         if response.status_code == 200:
             goods = self.make_card(response.json(), [])
@@ -96,7 +96,7 @@ class WildberriesParser(Parser):
             return 200
         else:
             return 429
-    
+
     def parse_request(self, search_request: str, sort: str, limit: int) -> list[dict]:
         """
         Парсит товары на WB, возвращает list[dict]
@@ -105,29 +105,31 @@ class WildberriesParser(Parser):
         if sort not in ["popular", "priceup", "pricedown", "rate"]:
             sort = "popular"
 
-        count_pages = (limit + 99) // 100 
+        count_pages = (limit + 99) // 100
 
-        if 'wildberries.ru/catalog' in search_request:
+        if "wildberries.ru/catalog" in search_request:
             return self.parse_by_link(search_request)[:limit]
         else:
             return self.parse_by_name(search_request, sort, count_pages)[:limit]
 
-    
     @staticmethod
     def json2good(data: dict) -> Good:
         return Good(
-            id=data['url'].split('catalog/')[1].split('/')[0],
-            name=data['name'],
+            id=data["url"].split("catalog/")[1].split("/")[0],
+            name=data["name"],
             created_at=datetime.datetime.now(),
-            price=data['price'],
-            images=[data['img']],
-            source='wildberries',
-            url=data['url'],
-            rating=data['rating'],
-            reviews=data['reviews']
+            price=data["price"],
+            images=[data["img"]],
+            source="wildberries",
+            url=data["url"],
+            rating=data["rating"],
+            reviews=data["reviews"],
         )
 
     def get_goods(self, request: str, *, limit: int = 100, **kwargs) -> list[Good]:
         sort = kwargs.get("sort", "popular")
-        data =  self.parse_request([request], sort, limit)
-        return [self.json2good(x) for x in data] #NOTE kostyl 
+        data = self.parse_request([request], sort, limit)
+        return [self.json2good(x) for x in data]  # NOTE kostyl
+
+    def get_good(self, good_id: int, **kwargs) -> Good:
+        ...

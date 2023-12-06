@@ -21,7 +21,7 @@ class Parser(ABC):
 
         raise NotImplementedError
 
-    def get_good(self, good_id: str, **kwargs) -> Good:
+    def get_good(self, good_id: int, **kwargs) -> Good:
         """Get good from the site
 
         Args:
