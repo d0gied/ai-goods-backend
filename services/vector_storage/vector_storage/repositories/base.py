@@ -1,19 +1,53 @@
 from abc import ABC, abstractmethod
 from pydantic import BaseModel
-from ..models import Good
+from ..models import GoodEmbedding
+from pathlib import Path
+
 
 class BaseRepository(ABC):
-    """ Base repository """
+    """Base repository"""
+    
+    def __init__(self, path: str | Path, size: int = 512):
+        super().__init__()
+        if isinstance(path, str):
+            self.path = Path(path)
+        else:
+            self.path = path
+        self.path: Path
+        self.size = size
+
     @abstractmethod
-    def add_goods(self, goods: list[Good]):
-        """ Add goods to vector storage """
+    def add(self, embeddings: list[GoodEmbedding]):
+        """Add embeddings to repository"""
         pass
 
     @abstractmethod
-    def get_goods(self, good: Good, limit: int = 10) -> list[Good]:
-        """ Get goods from vector storage """
+    def get(self, id: str) -> GoodEmbedding:
+        """Get embedding from repository"""
         pass
-    
-    def remove_goods(self, goods: list[Good]):
-        """ Remove goods from vector storage """
+
+    @abstractmethod
+    def delete(self, ids: list[int]):
+        """Delete embedding from repository"""
+        pass
+
+    @abstractmethod
+    def search(
+        self, embedding: GoodEmbedding, k: int = 10, threshold: float = None
+    ) -> list[int]:
+        """Search for similar embeddings"""
+        pass
+
+    @abstractmethod
+    def save(self):
+        """Save repository"""
+        pass
+
+    @abstractmethod
+    def load(self) -> bool:
+        """ Load repository 
+        
+        Returns:
+            bool: True if repository exists
+        """
         pass

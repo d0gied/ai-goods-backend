@@ -1,1 +1,1 @@
-from .good import Good
+from .good import Good, GoodEmbedding

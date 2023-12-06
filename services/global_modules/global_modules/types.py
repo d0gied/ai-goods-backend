@@ -1,3 +1,1 @@
-from typing import NewType
-
-URL = NewType('URL', str)
+from typing import NewType, TypeVar, Union, Any, Callable, Type, Optional, Literal, overload

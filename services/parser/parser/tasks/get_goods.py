@@ -6,7 +6,7 @@ from ..parsers.base import Parser
 from .base import BaseTask
 
 
-class GetGoodsFromSourceTask(BaseTask):
+class GetGoodsTask(BaseTask):
     """Parser task with prerealized logic for parsing to be used in subclasses
     Scrapes goods from source
 
@@ -33,13 +33,9 @@ class GetGoodsFromSourceTask(BaseTask):
         return goods
 
 
-class GetGoodsTask(BaseTask):
+class GetGoodsMultipleSourcesTask(BaseTask):
     """Parser task with prerealized logic for parsing to be used in subclasses
     Scrapes goods from multiple sources
-
-    Args:
-        name (str): name of the task
-        parser (Parser): parser instance
     """
 
     def __init__(self):
@@ -68,9 +64,10 @@ class GetGoodsTask(BaseTask):
 
         return goods
 
-
-def get_goods_from_source_task_builder(
-    name: str, parser: Parser
-) -> GetGoodsFromSourceTask:
+def get_goods_task_builder(name: str, parser: Parser) -> GetGoodsTask:
     """Get GetGoodTask instance"""
-    return GetGoodsFromSourceTask(name=name, parser=parser)
+    return GetGoodsTask(name=name, parser=parser)
+
+def get_goods_multiple_sources_task_builder() -> GetGoodsMultipleSourcesTask:
+    """Get GetGoodTask instance"""
+    return GetGoodsMultipleSourcesTask()

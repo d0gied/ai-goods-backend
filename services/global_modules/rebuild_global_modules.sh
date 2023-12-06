@@ -31,6 +31,16 @@ then
     exit
 fi
 
+# run pytest and check if all tests are passed
+echo -e "${BGreen}Running pytest...${Color_Off}"
+poetry run pytest
+if [ $? -eq 0 ]; then
+    echo -e "${BGreen}All tests passed${Color_Off}"
+else
+    echo -e "${BRed}Tests failed${Color_Off}"
+    exit
+fi
+
 # get current version from poetry
 POETRY_VERSION="$(poetry version | awk '{print $2}')"
 

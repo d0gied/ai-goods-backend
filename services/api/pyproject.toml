@@ -6,7 +6,7 @@ authors = ["d0gied <german.n.u@mail.ru>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.11"
 celery = "^5.3.5"
 fastapi = {extras = ["all"], version = "^0.104.1"}
 

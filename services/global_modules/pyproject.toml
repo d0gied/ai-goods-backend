@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "global_modules"
-version = "0.1.0.4"
+version = "0.1.0.12"
 description = ""
 authors = ["d0gied <german.n.u@mail.ru>"]
 readme = "README.md"
