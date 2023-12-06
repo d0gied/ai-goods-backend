@@ -585,7 +585,7 @@ files = [
 
 [[package]]
 name = "global-modules"
-version = "0.1.0.12"
+version = "0.1.0.13"
 description = ""
 category = "main"
 optional = false
@@ -594,6 +594,7 @@ files = []
 develop = false
 
 [package.dependencies]
+numpy = "^1.26.2"
 pydantic = "^2.5.2"
 
 [package.source]
