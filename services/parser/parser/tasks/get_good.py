@@ -14,7 +14,7 @@ class GetGoodTask(BaseTask):
         super().__init__(f'get_good.{name}')
         self.parser = parser
     
-    def run(self, good_id: str, **kwargs) -> dict:
+    def run(self, good_id: int, **kwargs) -> dict:
         """ Run the task """
         
         #TODO: add logging

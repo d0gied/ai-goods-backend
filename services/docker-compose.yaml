@@ -42,7 +42,7 @@ services:
 
   scraper_worker:
     build:
-      context: ./scraper
+      context: ./parser
       dockerfile: ./scraper/Dockerfile
     command: celery -A scraper_worker worker -l info -Q scraper -n scraper_worker@%h --concurrency=4
     environment:

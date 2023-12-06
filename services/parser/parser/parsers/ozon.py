@@ -9,7 +9,7 @@ class OZONParser(Parser):
         # TODO: Implement this method
         raise NotImplementedError
     
-    def get_good(self, good_id: str, **kwargs) -> Good:
+    def get_good(self, good_id: int, **kwargs) -> Good:
         # TODO: Implement this method
         raise NotImplementedError
 

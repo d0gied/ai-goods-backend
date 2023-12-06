@@ -7,6 +7,7 @@ def test_get_goods():
     # return warnings.warn("Not implemented")
     parser = WildberriesParser()
     goods = parser.get_goods("Карандаш", limit=10)
+
     assert isinstance(goods, list)
     assert all(isinstance(good, Good) for good in goods)
     assert goods
