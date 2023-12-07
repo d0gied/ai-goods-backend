@@ -18,14 +18,7 @@ class Good(BaseModel):
     rating: float | None = Field(None, description="Rating")
     reviews: int | None = Field(None, description="Number of reviews")
 
-NdArray = Annotated[
-    np.ndarray,
-    PlainValidator(lambda x: np.array(x)),
-    PlainSerializer(lambda x: x.tolist(), return_type=list),
-    
-]
-
 class GoodEmbedding(BaseModel):
     id: int = Field(..., description="Good ID")
-    vector: NdArray = Field(..., description="Good embedding vector")
+    vector: list[float] = Field(..., description="Good embedding vector")
     model_config=ConfigDict(arbitrary_types_allowed=True)

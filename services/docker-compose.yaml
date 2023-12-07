@@ -32,19 +32,7 @@ services:
     build:
       context: ./parser
       dockerfile: ./parser/Dockerfile
-    command: celery -A parser_worker worker -l info -Q parser -n parser_worker@%h --concurrency=4
-    environment:
-      - CELERY_BROKER_URL=pyamqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-    depends_on:
-      - rabbitmq
-      - redis
-
-  scraper_worker:
-    build:
-      context: ./parser
-      dockerfile: ./scraper/Dockerfile
-    command: celery -A scraper_worker worker -l info -Q scraper -n scraper_worker@%h --concurrency=4
+    command: celery -A run worker -l info -Q parser -n parser_worker@%h --concurrency=4
     environment:
       - CELERY_BROKER_URL=pyamqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
       - CELERY_RESULT_BACKEND=redis://redis:6379/0

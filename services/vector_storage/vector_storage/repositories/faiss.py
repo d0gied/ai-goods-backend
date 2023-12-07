@@ -13,7 +13,7 @@ class FaissRepository(BaseRepository):
         
     def add(self, embeddings: list[GoodEmbedding]):
         """ Add embeddings to repository """
-        vectors  = [embedding.vector for embedding in embeddings]
+        vectors = [embedding.vector for embedding in embeddings]
         ids = [embedding.id for embedding in embeddings]
         self.faiss.add_with_ids(np.array(vectors), np.array(ids, dtype=np.int64))
         
@@ -24,7 +24,7 @@ class FaissRepository(BaseRepository):
     def get(self, id: str) -> GoodEmbedding:
         """ Get embedding from repository """
         vector = self.faiss.reconstruct(int(id))
-        return GoodEmbedding(id=id, vector=vector)
+        return GoodEmbedding(id=id, vector=vector.tolist())
     
     def search(self, embedding: GoodEmbedding, k: int = 10, threshold: float = None) -> list[int]:
         """ Search for similar embeddings """

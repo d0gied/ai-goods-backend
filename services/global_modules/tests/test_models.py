@@ -72,23 +72,24 @@ import numpy as np
 from global_modules.models.good import GoodEmbedding
 
 def test_good_embedding_creation():
-    good_embedding = GoodEmbedding(id=1, vector=np.array([1, 2, 3]))
+    good_embedding = GoodEmbedding(id=1, vector=[1, 2, 3])
     assert isinstance(good_embedding, GoodEmbedding)
 
 def test_good_embedding_with_arguments():
-    vector = np.array([1, 2, 3])
+    vector = [1.1, 2.2, 3.3]
     good_embedding = GoodEmbedding(id=1, vector=vector)
     assert good_embedding.id == 1
-    assert np.array_equal(good_embedding.vector, vector)
+    assert good_embedding.vector == vector
 
 def test_good_embedding_field_types():
-    vector = np.array([1, 2, 3])
+    vector = [1.1, 2.2, 3.3]
     good_embedding = GoodEmbedding(id=1, vector=vector)
     assert isinstance(good_embedding.id, int)
-    assert isinstance(good_embedding.vector, np.ndarray)
+    assert isinstance(good_embedding.vector, list)
+    assert isinstance(good_embedding.vector[0], float)
     
 def test_good_embedding_transferred():
-    vector = np.array([1, 2, 3])
+    vector = [1.1, 2.2, 3.3]
     good_embedding = GoodEmbedding(id=1, vector=vector)
     good_embedding_dict = good_embedding.model_dump()
     
@@ -98,7 +99,7 @@ def test_good_embedding_transferred():
     
     assert isinstance(good_embedding_loaded, GoodEmbedding)
     assert isinstance(good_embedding_loaded.id, int)
-    assert isinstance(good_embedding_loaded.vector, np.ndarray)
+    assert isinstance(good_embedding_loaded.vector, list)
     
     assert good_embedding_loaded.id == good_embedding.id
-    assert np.array_equal(good_embedding_loaded.vector, good_embedding.vector)
+    assert good_embedding_loaded.vector == good_embedding.vector

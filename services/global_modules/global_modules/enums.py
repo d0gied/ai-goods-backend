@@ -6,3 +6,5 @@ class CeleryQueue(Enum):
     PARSE_ALIBABA = 'parse.alibaba'
     PARSE_OZON = 'parse.ozon'
     SCRAPE = 'scrape'
+    ML_IMAGE = 'ml.image'
+    ML_NAME = 'ml.name'

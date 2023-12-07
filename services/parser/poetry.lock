@@ -585,7 +585,7 @@ files = [
 
 [[package]]
 name = "global-modules"
-version = "0.1.0.13"
+version = "0.1.0.15"
 description = ""
 category = "main"
 optional = false
