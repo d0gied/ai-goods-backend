@@ -1,9 +1,17 @@
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, Field, HttpUrl, ConfigDict, PlainSerializer, PlainValidator
-from typing_extensions import Literal, Annotated
 import numpy as np
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    HttpUrl,
+    PlainSerializer,
+    PlainValidator,
+)
+from typing_extensions import Annotated, Literal, NewType
+
 
 class Good(BaseModel):
     id: int = Field(..., description="Good ID")
@@ -18,7 +26,13 @@ class Good(BaseModel):
     rating: float | None = Field(None, description="Rating")
     reviews: int | None = Field(None, description="Number of reviews")
 
+
+GoodDumped = NewType("GoodDumped", dict[str, Any])
+
+
 class GoodEmbedding(BaseModel):
     id: int = Field(..., description="Good ID")
     vector: list[float] = Field(..., description="Good embedding vector")
-    model_config=ConfigDict(arbitrary_types_allowed=True)
+
+
+GoodEmbeddingDumped = NewType("GoodEmbeddingDumped", dict[str, Any])

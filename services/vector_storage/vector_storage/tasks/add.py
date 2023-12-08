@@ -1,6 +1,6 @@
-from .base import BaseTask
 from ..models import GoodEmbedding
-from ..storage import get_storage, Storage
+from ..storage import Storage, get_storage
+from .base import BaseTask
 
 
 class AddTask(BaseTask):
