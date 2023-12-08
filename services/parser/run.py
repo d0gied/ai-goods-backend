@@ -28,6 +28,7 @@ for source, parser in sources.items():
 parser = ArgumentParser(description="Run vector storage worker")
 parser.add_argument("--tasks", help="get list of tasks", action="store_true")
 parser.add_argument("--worker", help="run worker", action="store_true")
+parser.add_argument("--test", help="run test", action="store_true")
 
 if __name__ == "__main__":
     args = parser.parse_args()
@@ -36,5 +37,7 @@ if __name__ == "__main__":
             print(task)
     elif args.worker:
         app.worker_main()
+    elif args.test:
+        app.worker_main(argv=["worker", "-l", "info", "-P", "solo"])
     else:
         app.start()

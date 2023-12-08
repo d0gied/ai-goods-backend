@@ -1,18 +1,17 @@
-FROM python:3.11.5-slim as builder
-
-RUN pip install poetry
-
-COPY pyproject.toml poetry.lock ./
-
-RUN poetry export --without-hashes --without dev,test -f requirements.txt > requirements.txt
-
+# Build: docker build -t goodsai-parser:latest ./services/ -f ./services/parser/Dockerfile
 FROM python:3.11.5-slim
+
+ARG TARGET_SERVICE
 
 WORKDIR /app
 
-COPY --from=builder requirements.txt ./
+RUN pip install poetry
 
-RUN python -m pip install --no-cache-dir -r requirements.txt
+COPY ${TARGET_SERVICE}/pyproject.toml ${TARGET_SERVICE}/poetry.lock ./
 
-COPY . .
+RUN poetry config virtualenvs.create false \
+    && poetry install --without dev --no-interaction --no-ansi
+
+COPY ${TARGET_SERVICE}/ /app
+
 

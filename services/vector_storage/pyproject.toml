@@ -12,6 +12,7 @@ global_modules = { path = "../global_modules" }
 faiss-cpu = "^1.7.4"
 langchain = "^0.0.344"
 celery = "^5.3.6"
+redis = "^5.0.1"
 
 
 [build-system]

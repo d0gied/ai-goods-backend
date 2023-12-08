@@ -9,6 +9,7 @@ readme = "README.md"
 python = "^3.11"
 celery = "^5.3.5"
 fastapi = {extras = ["all"], version = "^0.104.1"}
+redis = "^5.0.1"
 
 [build-system]
 requires = ["poetry-core"]

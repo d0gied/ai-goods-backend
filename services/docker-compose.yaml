@@ -1,11 +1,12 @@
 version: "3"
 services:
-  api:
-    build: ./api
-    ports:
-      - "5000:5000"
+  # api:
+  #   build: ./api
+  #   ports:
+  #     - "5000:5000"
 
   rabbitmq:
+    hostname: rabbitmq
     image: rabbitmq:3-management
     ports:
       - "5672:5672"
@@ -13,6 +14,7 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=$RABBITMQ_DEFAULT_USER # set in .env file
       - RABBITMQ_DEFAULT_PASS=$RABBITMQ_DEFAULT_PASS # set in .env file
+      - REDIS_URL=redis://redis:6379/0
 
   redis:
     image: redis:alpine
@@ -27,11 +29,15 @@ services:
       - "5555:5555"
     environment:
       - CELERY_BROKER_URL=amqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - rabbitmq
+      - redis
 
   parser_worker:
     build:
-      context: ./parser
-      dockerfile: ./parser/Dockerfile
+      args:
+        - TARGET_SERVICE=parser
     command: celery -A run worker -l info -Q parser -n parser_worker@%h --concurrency=4
     environment:
       - CELERY_BROKER_URL=pyamqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
