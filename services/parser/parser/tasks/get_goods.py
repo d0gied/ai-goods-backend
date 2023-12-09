@@ -64,9 +64,11 @@ class GetGoodsMultipleSourcesTask(BaseTask):
 
         return goods
 
+
 def get_goods_task_builder(name: str, parser: Parser) -> GetGoodsTask:
     """Get GetGoodTask instance"""
     return GetGoodsTask(name=name, parser=parser)
+
 
 def get_goods_multiple_sources_task_builder() -> GetGoodsMultipleSourcesTask:
     """Get GetGoodTask instance"""

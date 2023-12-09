@@ -21,7 +21,7 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - ./redis-data:/data
+      - ./data/redis:/data
 
   flower:
     image: mher/flower
@@ -34,7 +34,19 @@ services:
       - rabbitmq
       - redis
 
+  postgres:
+    image: postgres:11.1-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=$POSTGRES_USER # set in .env file
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD # set in .env file
+      - POSTGRES_DB=$POSTGRES_DB # set in .env file
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+
   parser_worker:
+    image: parser_worker
     build:
       args:
         - TARGET_SERVICE=parser
@@ -45,3 +57,35 @@ services:
     depends_on:
       - rabbitmq
       - redis
+    env_file:
+      - .env
+  
+  agent_worker:
+    image: agent_worker
+    build:
+      args:
+        - TARGET_SERVICE=agent
+    command: celery -A run worker -l info -Q agent -n agent_worker@%h --concurrency=4
+    environment:
+      - CELERY_BROKER_URL=pyamqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - rabbitmq
+      - redis
+    env_file:
+      - .env
+  
+  ml_worker:
+    image: ml_worker
+    build:
+      args:
+        - TARGET_SERVICE=ML
+    command: celery -A run worker -l info -Q ml -n ml_worker@%h --concurrency=4
+    environment:
+      - CELERY_BROKER_URL=pyamqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - rabbitmq
+      - redis
+    env_file:
+      - .env

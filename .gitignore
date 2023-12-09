@@ -160,3 +160,5 @@ cython_debug/
 #.idea/
 
 ./services/redis-data
+./redis-data
+/services/data

@@ -12,6 +12,8 @@ from pydantic import (
 )
 from typing_extensions import Annotated, Literal, NewType
 
+from ..db.schemas.good import AddGoodSchema
+
 
 class Good(BaseModel):
     id: int = Field(..., description="Good ID")
@@ -25,6 +27,18 @@ class Good(BaseModel):
     url: HttpUrl | None = Field(None, description="URL")
     rating: float | None = Field(None, description="Rating")
     reviews: int | None = Field(None, description="Number of reviews")
+
+    def to_add_schema(self):
+        return AddGoodSchema(
+            name=self.name,
+            price=self.price,
+            images=self.images,
+            description=self.description,
+            source=self.source,
+            url=self.url,
+            rating=self.rating,
+            reviews=self.reviews,
+        )
 
 
 GoodDumped = NewType("GoodDumped", dict[str, Any])

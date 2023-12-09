@@ -4,6 +4,8 @@
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
+    // "python.linting.enabled": true,
+    // "python.linting.mypyEnabled": true,
     "[python]": {
         "diffEditor.ignoreTrimWhitespace": false,
         "gitlens.codeLens.symbolScopes": [
@@ -23,5 +25,8 @@
         ],
         "editor.renderWhitespace": "selection",
         "editor.renderControlCharacters": true,
-    }
+    },
+    "cSpell.enableFiletypes": [
+        "!python"
+    ]
 }
