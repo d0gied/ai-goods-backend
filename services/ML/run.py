@@ -1,10 +1,11 @@
+import argparse
+
 from celery import Celery
 from celery.schedules import crontab
 from celery.utils.log import get_task_logger
-from ml.tasks import get_image_tasks, get_name_tasks
 from global_modules.enums import CeleryQueue
-import argparse
 from ml.config import CELERY_BROKER_URL, CELERY_RESULT_BACKEND
+from ml.tasks import get_image_tasks, get_name_image_tasks, get_name_tasks
 
 app = Celery(
     __name__,
@@ -15,13 +16,19 @@ app = Celery(
 for task in get_image_tasks():
     app.register_task(
         task,
-        queue=CeleryQueue.ML_IMAGE,
+        queue=task.queue,
     )
 
 for task in get_name_tasks():
     app.register_task(
         task,
-        queue=CeleryQueue.ML_NAME,
+        queue=task.queue,
+    )
+
+for task in get_name_image_tasks():
+    app.register_task(
+        task,
+        queue=task.queue,
     )
 
 logger = get_task_logger(__name__)
@@ -35,10 +42,16 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.tasks:
         for task in app.tasks:
-            print(task)
+            if task.startswith("celery."):
+                continue
+            print("--------------------------")
+            print(f"Task: {task}")
+            print(f"Queue: {app.tasks[task].queue}")
     elif args.worker:
         app.worker_main()
     elif args.test:
-        app.worker_main(argv=["worker", "-B", "-l", "INFO", "-E", "-Q", CeleryQueue.STORAGE])
+        app.worker_main(
+            argv=["worker", "-B", "-l", "INFO", "-E", "-Q", CeleryQueue.STORAGE]
+        )
     else:
         app.start()

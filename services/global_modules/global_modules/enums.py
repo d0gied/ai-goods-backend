@@ -1,12 +1,12 @@
 from enum import Enum
 
 
-class CeleryQueue(Enum):
+class CeleryQueue(str, Enum):
     STORAGE = "storage"
-    PARSE_WILDBERRIES = "parse.wildberries"
-    PARSE_ALIBABA = "parse.alibaba"
-    PARSE_OZON = "parse.ozon"
-    SCRAPE = "scrape"
-    ML_IMAGE = "ml.image"
-    ML_NAME = "ml.name"
-    ML_NAME_IMAGE = "ml.name_image"
+    PARSE_WILDBERRIES: str = "parse.wildberries"
+    PARSE_ALIBABA: str = "parse.alibaba"
+    PARSE_OZON: str = "parse.ozon"
+    SCRAPE: str = "scrape"
+    ML_IMAGE: str = "ml.image"
+    ML_NAME: str = "ml.name"
+    ML_NAME_IMAGE: str = "ml.name_image"

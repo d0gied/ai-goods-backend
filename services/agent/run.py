@@ -22,7 +22,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.tasks:
         for task in app.tasks:
-            print(task)
+            if task.startswith("celery."):
+                continue
+            print("--------------------------")
+            print(f"Task: {task}")
+            print(f"Queue: {app.tasks[task].queue}")
+
     elif args.worker:
         app.worker_main()
     elif args.test:

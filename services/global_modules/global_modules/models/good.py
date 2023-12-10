@@ -12,6 +12,7 @@ from pydantic import (
 )
 from typing_extensions import Annotated, Literal, NewType
 
+from ..db.models.good import Good as GoodORM
 from ..db.schemas.good import AddGoodSchema
 
 
@@ -40,6 +41,22 @@ class Good(BaseModel):
             reviews=self.reviews,
         )
 
+    @classmethod
+    def from_orm(cls, orm: GoodORM):
+        return cls(
+            id=orm.id,
+            name=orm.name,
+            created_at=orm.created_at,
+            updated_at=orm.updated_at,
+            price=orm.price,
+            images=orm.images,
+            description=orm.description,
+            source=orm.source,
+            url=orm.url,
+            rating=orm.rating,
+            reviews=orm.reviews,
+        )
+
 
 GoodDumped = NewType("GoodDumped", dict[str, Any])
 
@@ -47,6 +64,14 @@ GoodDumped = NewType("GoodDumped", dict[str, Any])
 class GoodEmbedding(BaseModel):
     id: int = Field(..., description="Good ID")
     vector: list[float] = Field(..., description="Good embedding vector")
+
+    def from_orm(cls, orm: GoodORM, target: Literal["image", "name", "name_image"]):
+        matches = {
+            "image": orm.image_embedding,
+            "name": orm.name_embedding,
+            "name_image": orm.name_image_embedding,
+        }
+        return cls(id=orm.id, vector=matches[target])
 
 
 GoodEmbeddingDumped = NewType("GoodEmbeddingDumped", dict[str, Any])

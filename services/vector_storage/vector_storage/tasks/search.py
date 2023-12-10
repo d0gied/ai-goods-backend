@@ -17,7 +17,14 @@ class SearchTask(BaseTask):
         self.search(storage, goods)
         storage.save()
 
-    def search(self, storage: Storage, good: GoodEmbedding):
+    def search(
+        self,
+        storage: Storage,
+        good: GoodEmbedding,
+        *,
+        limit: int = 100,
+        threshold: float = None,
+    ):
         """Search goods in storage"""
         raise NotImplementedError("Subclasses must implement this method")
 
@@ -28,9 +35,16 @@ class SearchByNameTask(SearchTask):
     def __init__(self):
         super().__init__("name")
 
-    def search(self, storage: Storage, good: GoodEmbedding):
+    def search(
+        self,
+        storage: Storage,
+        good: GoodEmbedding,
+        *,
+        limit: int = 100,
+        threshold: float = None,
+    ):
         """Search goods in storage"""
-        storage.search_by_name(good)
+        storage.search_by_name(good, k=limit, threshold=threshold)
 
 
 class SearchByImageTask(SearchTask):
@@ -39,9 +53,16 @@ class SearchByImageTask(SearchTask):
     def __init__(self):
         super().__init__("image")
 
-    def search(self, storage: Storage, goods: list[GoodEmbedding]):
+    def search(
+        self,
+        storage: Storage,
+        good: GoodEmbedding,
+        *,
+        limit: int = 100,
+        threshold: float = None,
+    ):
         """Search goods in storage"""
-        storage.search_by_image(goods)
+        storage.search_by_image(good, k=limit, threshold=threshold)
 
 
 class SearchByNameImageTask(SearchTask):
@@ -50,9 +71,16 @@ class SearchByNameImageTask(SearchTask):
     def __init__(self):
         super().__init__("name_image")
 
-    def search(self, storage: Storage, goods: list[GoodEmbedding]):
+    def search(
+        self,
+        storage: Storage,
+        good: GoodEmbedding,
+        *,
+        limit: int = 100,
+        threshold: float = None,  # TODO: add threshold in other levels
+    ):
         """Search goods in storage"""
-        storage.search_by_name_image(goods)
+        storage.search_by_name_image(good, k=limit, threshold=threshold)
 
 
 def get_tasks() -> list[BaseTask]:

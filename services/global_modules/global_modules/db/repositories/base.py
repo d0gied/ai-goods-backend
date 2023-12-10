@@ -64,3 +64,7 @@ class SQLAlchemyRepository(AbstractRepository):
             session.delete(instance)
             session.commit()
             return instance
+
+    def get_by_ids(self, ids: list[int]) -> list[Base]:
+        with SessionLocal() as session:
+            return session.query(self.model).filter(self.model.id.in_(ids)).all()

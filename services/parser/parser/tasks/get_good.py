@@ -15,6 +15,7 @@ class GetGoodTask(BaseTask):
     def __init__(self, name: str, parser: Parser):
         super().__init__(f"get_good.{name}")
         self.parser = parser
+        self.queue = f"parse.{name}"
 
     def run(self, good_id: int, **kwargs) -> dict:
         """Run the task"""

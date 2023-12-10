@@ -27,7 +27,7 @@ class Good(Base):
 
     image_embedding = Column(Embedding, default=[0] * 512)
     name_embedding = Column(Embedding, default=[0] * 512)
-    name_embedding = Column(Embedding, default=[0] * 512)
+    name_image_embedding = Column(Embedding, default=[0] * 512)
 
     def __repr__(self) -> str:
         return f"<Good {self.id}: name={self.name}, price={self.price}>"

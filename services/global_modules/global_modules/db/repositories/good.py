@@ -25,3 +25,6 @@ class GoodRepository(SQLAlchemyRepository):
 
     def delete(self, id: int) -> Good:
         return super().delete(id)
+
+    def get_by_ids(self, ids: list[int]) -> list[Good]:
+        return super().get_by_ids(ids)

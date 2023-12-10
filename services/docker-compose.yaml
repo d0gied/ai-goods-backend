@@ -15,6 +15,11 @@ services:
       - RABBITMQ_DEFAULT_USER=$RABBITMQ_DEFAULT_USER # set in .env file
       - RABBITMQ_DEFAULT_PASS=$RABBITMQ_DEFAULT_PASS # set in .env file
       - REDIS_URL=redis://redis:6379/0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:15672"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   redis:
     image: redis:alpine
@@ -45,6 +50,25 @@ services:
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
 
+  api:
+    image: api
+    build:
+      args:
+        - TARGET_SERVICE=api
+    ports:
+      - "8585:5000"
+    command: uvicorn run:app --host ${HOST:-0.0.0.0} --port ${PORT:-5000} --reload
+    environment:
+      - DATABASE_URL=postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres:5432/$POSTGRES_DB
+      - CELERY_BROKER_URL=pyamqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - rabbitmq
+      - redis
+  
   parser_worker:
     image: parser_worker
     build:

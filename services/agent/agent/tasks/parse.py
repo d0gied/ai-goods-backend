@@ -1,6 +1,15 @@
 from typing import Literal
 
-from celery import current_app
+from celery import (
+    current_app,
+    shared_task,
+    current_task,
+    chord,
+    chain,
+    group,
+    signature,
+    Task,
+)
 from celery.result import AsyncResult
 from global_modules.db.repositories import GoodRepository
 from global_modules.db.schemas import UpdateGoodEmbeddingsSchema
@@ -18,6 +27,7 @@ class EmbedAndSaveImageTask(BaseTask):
 
     def run(self, good: GoodDumped):
         good_model = Good.model_validate(good)
+
         assert good_model.id is not None  # noqa: S101
 
         embed_task = current_app.send_task(
@@ -164,4 +174,7 @@ def get_tasks() -> BaseTask:
         ParseTask("wildberries"),
         ParseTask("alibaba"),
         ParseTask("ozon"),
+        EmbedAndSaveImageTask(),
+        EmbedAndSaveNameTask(),
+        EmbedAndSaveNameImageTask(),
     ]

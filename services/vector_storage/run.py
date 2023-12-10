@@ -1,10 +1,11 @@
+import argparse
+
 from celery import Celery
 from celery.schedules import crontab
 from celery.utils.log import get_task_logger
-from vector_storage.tasks import get_tasks
 from global_modules.enums import CeleryQueue
-import argparse
 from vector_storage.config import CELERY_BROKER_URL, CELERY_RESULT_BACKEND
+from vector_storage.tasks import get_tasks
 
 app = Celery(
     __name__,
@@ -15,7 +16,7 @@ app = Celery(
 for task in get_tasks():
     app.register_task(
         task,
-        queue=CeleryQueue.STORAGE,
+        queue=CeleryQueue.STORAGE.value,
     )
 
 logger = get_task_logger(__name__)
@@ -29,10 +30,16 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.tasks:
         for task in app.tasks:
-            print(task)
+            if task.startswith("celery."):
+                continue
+            print("--------------------------")
+            print(f"Task: {task}")
+            print(f"Queue: {CeleryQueue.STORAGE.value}")
     elif args.worker:
         app.worker_main()
     elif args.test:
-        app.worker_main(argv=["worker", "-B", "-l", "INFO", "-E", "-Q", CeleryQueue.STORAGE])
+        app.worker_main(
+            argv=["worker", "-B", "-l", "INFO", "-E", "-Q", CeleryQueue.STORAGE]
+        )
     else:
         app.start()

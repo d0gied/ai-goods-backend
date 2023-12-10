@@ -1,23 +1,41 @@
 from functools import lru_cache
+from io import BytesIO
+
+import numpy as np
+import requests
+from PIL import Image
 
 from .base import Embedding
 
 
-class TextEmbedding(Embedding):
-    """Text embedding"""
+class NameImageEmbedding(Embedding):
+    """Image embedding"""
 
     size: int = 512
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def get_embedding(self, data: str, **kwargs) -> list[float]:
+    @staticmethod
+    def load_image(url: str) -> np.ndarray:
+        """Load image from URL"""
+
+        response = requests.get(url)
+        if response.status_code != 200:
+            raise Exception(f"Can't load image from {url}")
+        return np.array(Image.open(BytesIO(response.content)))
+
+    def get_embedding(self, data: tuple[str, str], **kwargs) -> list[float]:
+        name, image_url = data
         """Get embedding from data"""
+        image = self.load_image(image_url)
         # TODO: needs to be implemented
         pass
         return [0] * self.size
 
-    def get_embeddings(self, data: list[str], **kwargs) -> list[list[float]]:
+    def get_embeddings(
+        self, data: list[tuple[str, str]], **kwargs
+    ) -> list[list[float]]:
         """Get embeddings from data"""
         embeddings = []
         for item in data:
@@ -44,6 +62,6 @@ class TextEmbedding(Embedding):
 
 
 @lru_cache
-def get_embeddings() -> TextEmbedding:
+def get_embeddings() -> NameImageEmbedding:
     """Get embeddings model"""
-    return TextEmbedding()
+    return NameImageEmbedding()
