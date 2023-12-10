@@ -17,6 +17,7 @@ tqdm = "^4.66.1"
 celery = "^5.3.5"
 pydantic = "^2.5.1"
 requests = "^2.31.0"
+redis = "^5.0.1"
 
 
 [tool.poetry.group.dev.dependencies]

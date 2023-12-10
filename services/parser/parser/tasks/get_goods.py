@@ -18,6 +18,7 @@ class GetGoodsTask(BaseTask):
     def __init__(self, name: str, parser: Parser):
         super().__init__(f"get_goods.{name}")
         self.parser = parser
+        self.queue = f"parse.{name}"
 
     def run(self, request: str, *, limit=100, **kwargs) -> list[dict]:
         """Run the task"""
@@ -64,9 +65,11 @@ class GetGoodsMultipleSourcesTask(BaseTask):
 
         return goods
 
+
 def get_goods_task_builder(name: str, parser: Parser) -> GetGoodsTask:
     """Get GetGoodTask instance"""
     return GetGoodsTask(name=name, parser=parser)
+
 
 def get_goods_multiple_sources_task_builder() -> GetGoodsMultipleSourcesTask:
     """Get GetGoodTask instance"""

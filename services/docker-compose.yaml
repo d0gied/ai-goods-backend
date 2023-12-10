@@ -1,11 +1,12 @@
 version: "3"
 services:
-  api:
-    build: ./api
-    ports:
-      - "5000:5000"
+  # api:
+  #   build: ./api
+  #   ports:
+  #     - "5000:5000"
 
   rabbitmq:
+    hostname: rabbitmq
     image: rabbitmq:3-management
     ports:
       - "5672:5672"
@@ -13,13 +14,19 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=$RABBITMQ_DEFAULT_USER # set in .env file
       - RABBITMQ_DEFAULT_PASS=$RABBITMQ_DEFAULT_PASS # set in .env file
+      - REDIS_URL=redis://redis:6379/0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:15672"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   redis:
     image: redis:alpine
     ports:
       - "6379:6379"
     volumes:
-      - ./redis-data:/data
+      - ./data/redis:/data
 
   flower:
     image: mher/flower
@@ -27,27 +34,82 @@ services:
       - "5555:5555"
     environment:
       - CELERY_BROKER_URL=amqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - rabbitmq
+      - redis
 
+  postgres:
+    image: postgres:11.1-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=$POSTGRES_USER # set in .env file
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD # set in .env file
+      - POSTGRES_DB=$POSTGRES_DB # set in .env file
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+
+  api:
+    image: api
+    build:
+      args:
+        - TARGET_SERVICE=api
+    ports:
+      - "8585:5000"
+    command: uvicorn run:app --host ${HOST:-0.0.0.0} --port ${PORT:-5000} --reload
+    environment:
+      - DATABASE_URL=postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres:5432/$POSTGRES_DB
+      - CELERY_BROKER_URL=pyamqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - rabbitmq
+      - redis
+  
   parser_worker:
+    image: parser_worker
     build:
-      context: ./parser
-      dockerfile: ./parser/Dockerfile
-    command: celery -A parser_worker worker -l info -Q parser -n parser_worker@%h --concurrency=4
+      args:
+        - TARGET_SERVICE=parser
+    command: celery -A run worker -l info -Q parser -n parser_worker@%h --concurrency=4
     environment:
       - CELERY_BROKER_URL=pyamqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
       - rabbitmq
       - redis
-
-  scraper_worker:
+    env_file:
+      - .env
+  
+  agent_worker:
+    image: agent_worker
     build:
-      context: ./parser
-      dockerfile: ./scraper/Dockerfile
-    command: celery -A scraper_worker worker -l info -Q scraper -n scraper_worker@%h --concurrency=4
+      args:
+        - TARGET_SERVICE=agent
+    command: celery -A run worker -l info -Q agent -n agent_worker@%h --concurrency=4
     environment:
       - CELERY_BROKER_URL=pyamqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
       - rabbitmq
       - redis
+    env_file:
+      - .env
+  
+  ml_worker:
+    image: ml_worker
+    build:
+      args:
+        - TARGET_SERVICE=ML
+    command: celery -A run worker -l info -Q ml -n ml_worker@%h --concurrency=4
+    environment:
+      - CELERY_BROKER_URL=pyamqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - rabbitmq
+      - redis
+    env_file:
+      - .env

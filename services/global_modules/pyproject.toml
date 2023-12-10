@@ -1,15 +1,22 @@
 [tool.poetry]
 name = "global_modules"
-version = "0.1.0.13"
+version = "0.1.0.21"
 description = ""
 authors = ["d0gied <german.n.u@mail.ru>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-pydantic = "^2.5.2"
+pydantic = {extras = ["dotenv", "email"], version = "^2.5.2"}
 numpy = "^1.26.2"
+sqlalchemy = "^2.0.23"
+psycopg2-binary = "^2.9.9"
 
+
+[tool.poetry.group.dev.dependencies]
+flake8 = "^6.1.0"
+pytest = "^7.4.3"
+mypy = "^1.7.1"
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,0 +1,11 @@
+digraph "classes_PyReverse" {
+rankdir=BT
+charset="utf-8"
+"tasks.vector_storage.search.SearchByImageTask" [color="black", fontcolor="black", label=<{SearchByImageTask|name : str<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"tasks.vector_storage.search.SearchByNameImageTask" [color="black", fontcolor="black", label=<{SearchByNameImageTask|name : str<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"tasks.vector_storage.search.SearchByNameTask" [color="black", fontcolor="black", label=<{SearchByNameTask|name : str<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"tasks.vector_storage.search.SearchTask" [color="black", fontcolor="black", label=<{SearchTask|name : str<br ALIGN="LEFT"/>|<I>run</I>(good: GoodEmbeddingDumped): list[GoodEmbeddingDumped]<br ALIGN="LEFT"/>}>, shape="record", style="solid"];
+"tasks.vector_storage.search.SearchByImageTask" -> "tasks.vector_storage.search.SearchTask" [arrowhead="empty", arrowtail="none"];
+"tasks.vector_storage.search.SearchByNameImageTask" -> "tasks.vector_storage.search.SearchTask" [arrowhead="empty", arrowtail="none"];
+"tasks.vector_storage.search.SearchByNameTask" -> "tasks.vector_storage.search.SearchTask" [arrowhead="empty", arrowtail="none"];
+}
