@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from functools import lru_cache
 
 import celery
 from celery.result import AsyncResult
@@ -7,6 +8,7 @@ from celery.states import PENDING
 from ..config import CELERY_BROKER_URL, CELERY_RESULT_BACKEND
 
 
+@lru_cache(maxsize=1)
 def get_session():
     return celery.Celery(
         __name__,

@@ -1,7 +1,12 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 
 from ..tasks.parse import ParseWildberriesTask
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/parse",
@@ -32,10 +37,13 @@ def get_parse_wildberries(task_id: str):
     if task is None:
         raise HTTPException(status_code=404, detail="Task not found")
 
-    return JSONResponse(
-        {
-            "task_id": task.id,
-            "status": task.state,
-            "result": task.result,
-        }
-    )
+    response = {
+        "task_id": task.id,
+        "status": task.state,
+    }
+    if task.state == "SUCCESS":
+        response["result"] = task.result
+    else:
+        response["error"] = task.traceback
+
+    return JSONResponse(response)

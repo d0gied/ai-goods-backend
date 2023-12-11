@@ -1,14 +1,14 @@
 from typing import Literal
 
 from celery import (
-    current_app,
-    shared_task,
-    current_task,
-    chord,
-    chain,
-    group,
-    signature,
     Task,
+    chain,
+    chord,
+    current_app,
+    current_task,
+    group,
+    shared_task,
+    signature,
 )
 from celery.result import AsyncResult
 from global_modules.db.repositories import GoodRepository
