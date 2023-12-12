@@ -1,4 +1,5 @@
 import os
+from functools import lru_cache
 
 import cv2
 import numpy as np
@@ -13,17 +14,26 @@ def normalize_image(image):
     image /= 255.0
     for i in range(image.shape[2]):
         image[:, :, i] = (image[:, :, i] - mean[i]) / std[i]
-    
+
     image = cv2.resize(image, (224, 224))
-    image = image.transpose(2,0,1)
+    image = image.transpose(2, 0, 1)
     image = image[np.newaxis, :]
     return image
 
-class MatchingModel():
+
+class MatchingModel:
     def __init__(self):
-        self.sess = onnxruntime.InferenceSession("/Users/dmitrykutsenko/Desktop/ai-goods-backend/services/ML/ml/models/weights/model.onnx")
+        # ai-goods-backend/services/ML/ml/models/weights/model.onnx
+        weights_path = "./weights/model.onnx"
+
+        self.sess = onnxruntime.InferenceSession(weights_path)
         self.input_name = self.sess.get_inputs()[0].name
 
     def run(self, array):
         result = self.sess.run(None, {self.input_name: array})[0]
         return result
+
+
+@lru_cache()
+def get_matching_model():
+    return MatchingModel()  # add caching class to avoid loading model each time
