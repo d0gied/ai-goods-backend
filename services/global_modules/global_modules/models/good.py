@@ -58,6 +58,7 @@ class Good(BaseModel):
             images=orm.images,
             description=orm.description,
             source=orm.source,
+            source_id=orm.source_id,
             url=orm.url,
             rating=orm.rating,
             reviews=orm.reviews,

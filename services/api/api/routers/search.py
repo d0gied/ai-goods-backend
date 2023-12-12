@@ -30,7 +30,6 @@ def start_search(name: str = None, image: str = None, limit: int = 100):
 @router.get("/search/{task_id}")
 def get_search_reuslt(task_id: str):
     """Get parse wildberries status"""
-    task = ParseWildberriesTask()
     task = task.get_status(task_id)
     if task is None:
         raise HTTPException(status_code=404, detail="Task not found")

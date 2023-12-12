@@ -1,17 +1,6 @@
-import time
 from typing import Literal
 
-from celery import (
-    Celery,
-    Task,
-    chain,
-    chord,
-    current_app,
-    current_task,
-    group,
-    shared_task,
-    signature,
-)
+from celery import chain, group, signature
 from celery.result import AsyncResult
 from global_modules.db.repositories import GoodRepository
 from global_modules.db.schemas import UpdateGoodEmbeddingsSchema
