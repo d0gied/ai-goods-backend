@@ -29,9 +29,19 @@ class MatchingModel:
         self.sess = onnxruntime.InferenceSession(weights_path)
         self.input_name = self.sess.get_inputs()[0].name
 
-    def run(self, array):
-        result = self.sess.run(None, {self.input_name: array})[0]
-        return result
+    def run(self, images: np.ndarray | list[np.ndarray]) -> np.ndarray:
+        if isinstance(images, list):
+            images = np.array(images)
+
+        model_output: list[tuple[np.ndarray, dict]] = self.sess.run(
+            None, {self.input_name: images}
+        )  # list: (embeddings: np.ndarray, dict: {???})
+
+        embeddings = []
+        for output in model_output:
+            embeddings.append(output[0].tolist())  # get embeddings from output
+
+        return embeddings
 
 
 @lru_cache()
