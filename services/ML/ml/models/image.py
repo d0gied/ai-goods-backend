@@ -24,24 +24,17 @@ def normalize_image(image):
 class MatchingModel:
     def __init__(self):
         # ai-goods-backend/services/ML/ml/models/weights/model.onnx
-        weights_path = "./weights/model.onnx"
+        weights_path = "ml/models/weights/model.onnx"
 
         self.sess = onnxruntime.InferenceSession(weights_path)
         self.input_name = self.sess.get_inputs()[0].name
 
-    def run(self, images: np.ndarray | list[np.ndarray]) -> np.ndarray:
-        if isinstance(images, list):
-            images = np.array(images)
+    def run(self, image: np.ndarray) -> list[float]:
+        model_output = self.sess.run(None, {self.input_name: image})
 
-        model_output: list[tuple[np.ndarray, dict]] = self.sess.run(
-            None, {self.input_name: images}
-        )  # list: (embeddings: np.ndarray, dict: {???})
-
-        embeddings = []
-        for output in model_output:
-            embeddings.append(output[0].tolist())  # get embeddings from output
-
-        return embeddings
+        # model_output: [ndarray[1, 512]]
+        embedding = model_output[0][0].tolist()
+        return embedding
 
 
 @lru_cache()

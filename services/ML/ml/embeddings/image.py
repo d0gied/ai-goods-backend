@@ -33,7 +33,7 @@ class ImageEmbedding(Embedding):
         image = normalize_image(image)
 
         model = get_matching_model()
-        emb = model.run([image])[0]
+        emb = model.run(image)
 
         return emb
 
