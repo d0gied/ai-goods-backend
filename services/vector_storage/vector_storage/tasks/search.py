@@ -11,11 +11,10 @@ class SearchTask(BaseTask):
 
     def run(self, good: dict) -> list[dict]:
         """Run task"""
-        goods = [GoodEmbedding.model_validate(good) for good in goods]
+        good = GoodEmbedding.model_validate(good)
 
         storage = get_storage()
-        self.search(storage, goods)
-        storage.save()
+        return self.search(storage, good)
 
     def search(
         self,
@@ -44,7 +43,7 @@ class SearchByNameTask(SearchTask):
         threshold: float = None,
     ):
         """Search goods in storage"""
-        storage.search_by_name(good, k=limit, threshold=threshold)
+        return storage.search_by_name(good, k=limit, threshold=threshold)
 
 
 class SearchByImageTask(SearchTask):
@@ -62,7 +61,7 @@ class SearchByImageTask(SearchTask):
         threshold: float = None,
     ):
         """Search goods in storage"""
-        storage.search_by_image(good, k=limit, threshold=threshold)
+        return storage.search_by_image(good, k=limit, threshold=threshold)
 
 
 class SearchByNameImageTask(SearchTask):
@@ -80,7 +79,7 @@ class SearchByNameImageTask(SearchTask):
         threshold: float = None,  # TODO: add threshold in other levels
     ):
         """Search goods in storage"""
-        storage.search_by_name_image(good, k=limit, threshold=threshold)
+        return storage.search_by_name_image(good, k=limit, threshold=threshold)
 
 
 def get_tasks() -> list[BaseTask]:

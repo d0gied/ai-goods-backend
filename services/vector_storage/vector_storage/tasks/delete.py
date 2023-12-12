@@ -9,8 +9,10 @@ class DeleteTask(BaseTask):
     def __init__(self, name: str):
         super().__init__(f"delete.{name}")
 
-    def run(self, goods: list[dict]):
+    def run(self, goods: list[dict] | dict):
         """Run task"""
+        if isinstance(goods, dict):
+            goods = [goods]
         goods = [GoodEmbedding.model_validate(good) for good in goods]
 
         storage = get_storage()
@@ -30,7 +32,8 @@ class DeleteByNameTask(DeleteTask):
 
     def delete(self, storage: Storage, goods: list[GoodEmbedding]):
         """Delete goods from storage"""
-        storage.delete_by_name(goods)
+        ids = [good.id for good in goods]
+        storage.delete_by_name(ids)
 
 
 class DeleteByImageTask(DeleteTask):
@@ -41,7 +44,8 @@ class DeleteByImageTask(DeleteTask):
 
     def delete(self, storage: Storage, goods: list[GoodEmbedding]):
         """Delete goods from storage"""
-        storage.delete_by_image(goods)
+        ids = [good.id for good in goods]
+        storage.delete_by_image(ids)
 
 
 class DeleteByNameImageTask(DeleteTask):
@@ -52,7 +56,8 @@ class DeleteByNameImageTask(DeleteTask):
 
     def delete(self, storage: Storage, goods: list[GoodEmbedding]):
         """Delete goods from storage"""
-        storage.delete_by_name_image(goods)
+        ids = [good.id for good in goods]
+        storage.delete_by_name_image(ids)
 
 
 def get_tasks() -> list[BaseTask]:

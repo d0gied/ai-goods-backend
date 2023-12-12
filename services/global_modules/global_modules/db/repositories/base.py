@@ -22,6 +22,10 @@ class AbstractRepository(ABC):
         pass
 
     @abstractmethod
+    def add_many(self, schemas: list[AddSchemaType]) -> list[Base]:
+        pass
+
+    @abstractmethod
     def update(self, id: int, schema: UpdateSchemaType) -> Base:
         pass
 
@@ -48,6 +52,15 @@ class SQLAlchemyRepository(AbstractRepository):
             session.commit()
             session.refresh(instance)
             return instance
+
+    def add_many(self, schemas: list[AddSchemaType]) -> list[Base]:
+        with SessionLocal() as session:
+            instances = [self.model(**schema.model_dump()) for schema in schemas]
+            session.add_all(instances)
+            session.commit()
+            for instance in instances:
+                session.refresh(instance)
+            return instances
 
     def update(self, id: int, schema: UpdateSchemaType) -> Base:
         with SessionLocal() as session:

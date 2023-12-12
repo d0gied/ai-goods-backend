@@ -1,6 +1,7 @@
 import fastapi
-from api.config import HOST, PORT
+from api.config import CELERY_BROKER_URL, CELERY_RESULT_BACKEND, HOST, PORT
 from api.routers import parse, search
+from celery import Celery
 
 app = fastapi.FastAPI()
 
@@ -14,6 +15,19 @@ def read_root():
 
 
 if __name__ == "__main__":
-    import uvicorn
+    celery = Celery(
+        "tasks",
+        broker=CELERY_BROKER_URL,
+        backend=CELERY_RESULT_BACKEND,
+    )
+    from celery.result import AsyncResult
 
-    uvicorn.run(app, host=HOST, port=PORT)
+    celery.send_task(
+        "agent.tasks.parse.wildberries",
+        args=["iphone 12"],
+        kwargs={"limit": 10},
+        queue="agent",
+    )
+    # import uvicorn
+
+    # uvicorn.run(app, host=HOST, port=PORT)

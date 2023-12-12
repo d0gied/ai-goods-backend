@@ -8,6 +8,7 @@ from ..config import (
     POSTGRES_PORT,
     POSTGRES_USER,
 )
+from .models import Base
 
 engine = create_engine(
     url=f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
@@ -21,3 +22,7 @@ def get_session() -> Session:
         yield db
     finally:
         db.close()
+
+
+def create_tables():
+    Base.metadata.create_all(bind=engine)

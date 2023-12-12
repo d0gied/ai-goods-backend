@@ -17,6 +17,7 @@ class Good(Base):
     price = Column(Float, index=True)
     images = Column(String)
     description = Column(String)
+    source_id = Column(String)
     source = Column(String)
     url = Column(String)
     rating = Column(Integer)

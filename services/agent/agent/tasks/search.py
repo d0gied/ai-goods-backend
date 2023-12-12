@@ -1,3 +1,4 @@
+import time
 from typing import Literal
 
 from celery import current_app
@@ -9,6 +10,12 @@ from global_modules.models import Good, GoodDumped, GoodEmbedding, GoodEmbedding
 from .base import BaseTask
 
 
+def get_task(task: AsyncResult):
+    while not task.ready():
+        time.sleep(0.1)
+    return task.get()
+
+
 class SearchByXXXTask(BaseTask):
     def __init__(self, name: Literal["name", "image", "name_image"]):
         super().__init__("search_by_{}".format(name))
@@ -17,15 +24,13 @@ class SearchByXXXTask(BaseTask):
     def run(
         self, good: GoodDumped, *, limit: int = 100, threshold: float = None
     ) -> list[GoodDumped]:
-        good_model = Good.model_validate(good)
-
         embed_task: AsyncResult = current_app.send_task(
             f"ml.tasks.process_{self.target}",
             args=[good],
-            queue=f"ml.{self.target}",
+            queue=f"ml",
         )
 
-        embedding: GoodEmbeddingDumped = embed_task.get()
+        embedding: GoodEmbeddingDumped = get_task(embed_task)
 
         search_task = current_app.send_task(
             f"storage.tasks.search.{self.target}",
@@ -33,7 +38,7 @@ class SearchByXXXTask(BaseTask):
             kwargs={"limit": limit, "threshold": threshold},
             queue="storage",
         )
-        ids = search_task.get()
+        ids = get_task(search_task)
         goods = GoodRepository().get_by_ids(ids)
         good_dumps: list[GoodDumped] = [
             Good.from_orm(good).model_dump() for good in goods
@@ -65,14 +70,12 @@ class SearchTask(BaseTask):
         else:
             raise ValueError("Good must have name or image")
 
-        SearchByXXXTask(target)
-
         task = SearchByXXXTask(target).apply_async(
             args=[good],
             kwargs={"limit": limit, "threshold": threshold},
-            queue=SearchByXXXTask.queue,
+            queue="agent",
         )
-        return task.get()
+        return get_task(task)
 
 
 def get_tasks():

@@ -23,6 +23,13 @@ class MockSQLAlchemyRepo(AbstractRepository):
         self.repo[good.id] = good
         return good
 
+    def add_many(self, schemas: list[AddGoodSchema]):
+        goods = [Good(**schema.model_dump()) for schema in schemas]
+        for good in goods:
+            good.id = len(self.repo) + 1
+            self.repo[good.id] = good
+        return goods
+
     def update(self, id: int, schema: UpdateGoodSchema):
         good: Good = self.repo[id]
         for key, value in schema.model_dump().items():

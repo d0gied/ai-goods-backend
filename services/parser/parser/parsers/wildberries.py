@@ -1,8 +1,10 @@
-from ..models import Good
-from .base import Parser
+import datetime
+
 import requests
 from tqdm import tqdm
-import datetime
+
+from ..models import Good
+from .base import Parser
 
 
 class WildberriesParser(Parser):

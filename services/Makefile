@@ -31,6 +31,8 @@ build-ml:
 	docker-compose build ml_worker
 build-agent:
 	docker-compose build agent_worker
+build-storage:
+	docker-compose build vector_storage
 
 up:
 	docker-compose up -d
