@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
+from global_modules.models import Good
 
-from ..tasks.search import SearchByImageTask, SearchByNameImageTask, SearchByNameTask
+from ..tasks.search import SearchTask
 
 router = APIRouter(
     prefix="/search",
@@ -23,21 +24,35 @@ def start_search(name: str = None, image: str = None, limit: int = 100):
         JSONResponse: Task status
     """
 
-    task = SearchByNameImageTask()
-    task_status = task.run(name, image, limit=limit)
+    task = SearchTask()
+
+    if not name and not image:
+        raise HTTPException(
+            status_code=400, detail="Bad request, name or image required"
+        )
+    good = Good(name=name, images=[image])
+    task_status = task.run(good, limit=limit)
+
+    response = {
+        "status": "ok",
+        "task_id": task_status.id,
+    }
+
+    return JSONResponse(response)
 
 
-@router.get("/search/{task_id}")
+@router.get("/{task_id}")
 def get_search_reuslt(task_id: str):
     """Get parse wildberries status"""
     task = task.get_status(task_id)
     if task is None:
         raise HTTPException(status_code=404, detail="Task not found")
 
-    return JSONResponse(
-        {
-            "task_id": task.id,
-            "status": task.state,
-            "result": task.result,
-        }
-    )
+    response = {
+        "task_id": task.id,
+        "status": task.state,
+    }
+    if task.state == "SUCCESS":
+        response["result"] = task.result
+
+    return JSONResponse(response)
