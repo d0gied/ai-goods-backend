@@ -34,10 +34,15 @@ class BaseTask(ABC):
                 kwargs=kwargs,
             )
 
-    def get_status(self, task_id: str) -> AsyncResult:
+    def get_status(self, task_id: str, ignore_name: bool = False) -> AsyncResult:
         with get_session() as session:
             r = AsyncResult(task_id, app=session)
             # check if the task exists
             if r.state == PENDING:  # noqa: WPS421
                 return None
+
+            # check if the task belongs to this task class
+            if r.name != self.name and not ignore_name:
+                return None
+
             return r

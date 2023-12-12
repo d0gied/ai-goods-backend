@@ -16,29 +16,40 @@ def get_task(task: AsyncResult):
     return task.get()
 
 
-class SearchByXXXTask(BaseTask):
-    def __init__(self, name: Literal["name", "image", "name_image"]):
-        super().__init__("search_by_{}".format(name))
-        self.target = name
+class LoadGoodsFromDBByIdsTask(BaseTask):
+    def __init__(self):
+        super().__init__("load_goods_from_db_by_ids")
 
-    def run(
-        self, good: GoodDumped, *, limit: int = 100, threshold: float = None
-    ) -> list[GoodDumped]:
+    def run(self, ids: list[int]) -> list[GoodDumped]:
+        goods = GoodRepository().get_by_ids(ids)
+        return [Good.from_orm(good) for good in goods]
+
+
+class SearchTask(BaseTask):
+    def __init__(self):
+        super().__init__("search")
+
+    def get_chain(
+        self,
+        target: Literal["name", "image", "image_name"],
+        good: GoodDumped,
+        limit: int = 100,
+        threshold: float = None,
+    ):
         embed_task: AsyncResult = current_app.send_task(
-            f"ml.tasks.process_{self.target}",
+            f"ml.tasks.process_{target}",
             args=[good],
             queue=f"ml",
         )
 
-        embedding: GoodEmbeddingDumped = get_task(embed_task)
+        embedding: GoodEmbeddingDumped = embed_task.get()
 
         search_task = current_app.send_task(
             f"storage.tasks.search.{self.target}",
-            args=[embedding],
             kwargs={"limit": limit, "threshold": threshold},
             queue="storage",
         )
-        ids = get_task(search_task)
+        ids = search_task.get()
         goods = GoodRepository().get_by_ids(ids)
         good_dumps: list[GoodDumped] = [
             Good.from_orm(good).model_dump() for good in goods
@@ -70,7 +81,7 @@ class SearchTask(BaseTask):
         else:
             raise ValueError("Good must have name or image")
 
-        task = SearchByXXXTask(target).apply_async(
+        task = SearchByXXXTask(target).signature(
             args=[good],
             kwargs={"limit": limit, "threshold": threshold},
             queue="agent",
