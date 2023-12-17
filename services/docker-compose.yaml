@@ -120,7 +120,7 @@ services:
     build:
       args:
         - TARGET_SERVICE=ML
-    command: celery -A run worker -l info -n ml_worker@%h --concurrency=4 -Q ml
+    command: celery -A run worker -l info -n ml_worker@%h --concurrency=1 -Q ml
     environment:
       - CELERY_BROKER_URL=pyamqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -137,7 +137,7 @@ services:
     build:
       args:
         - TARGET_SERVICE=vector_storage
-    command: celery -A run worker -l info -n vector_storage_worker@%h --concurrency=4 -Q storage
+    command: celery -A run worker -l info -n vector_storage_worker@%h --concurrency=1 -Q storage
     environment:
       - CELERY_BROKER_URL=pyamqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
