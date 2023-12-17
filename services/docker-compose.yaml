@@ -51,7 +51,12 @@ services:
       - ./data/postgres:/var/lib/postgresql/data
 
   api:
+<<<<<<< Updated upstream
     image: api
+=======
+    image: goodsai/api
+    container_name: api
+>>>>>>> Stashed changes
     build:
       args:
         - TARGET_SERVICE=api
@@ -70,7 +75,12 @@ services:
       - redis
   
   parser_worker:
+<<<<<<< Updated upstream
     image: parser_worker
+=======
+    image: goodsai/parser
+    container_name: parser_worker
+>>>>>>> Stashed changes
     build:
       args:
         - TARGET_SERVICE=parser
@@ -85,7 +95,12 @@ services:
       - .env
   
   agent_worker:
+<<<<<<< Updated upstream
     image: agent_worker
+=======
+    image: goodsai/agent
+    container_name: agent_worker
+>>>>>>> Stashed changes
     build:
       args:
         - TARGET_SERVICE=agent
@@ -100,7 +115,12 @@ services:
       - .env
   
   ml_worker:
+<<<<<<< Updated upstream
     image: ml_worker
+=======
+    image: goodsai/ml
+    container_name: ml_worker
+>>>>>>> Stashed changes
     build:
       args:
         - TARGET_SERVICE=ML
@@ -112,4 +132,25 @@ services:
       - rabbitmq
       - redis
     env_file:
+<<<<<<< Updated upstream
+=======
+      - .env
+
+  vector_storage:
+    image: goodsai/vector-storage
+    container_name: vector_storage
+    build:
+      args:
+        - TARGET_SERVICE=vector_storage
+    command: celery -A run worker -l info -n vector_storage_worker@%h --concurrency=4 -Q storage
+    environment:
+      - CELERY_BROKER_URL=pyamqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - rabbitmq
+      - redis
+    volumes:
+      - ./data/vector_storage:/app/vector_storage/storage
+    env_file:
+>>>>>>> Stashed changes
       - .env
