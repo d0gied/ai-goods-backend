@@ -21,12 +21,26 @@ def normalize_image(image):
     return image
 
 
+model_paths = [
+    "ml/models/weights/model.onnx",
+    "./weights/model.onnx",
+]
+
+
 class MatchingModel:
     def __init__(self):
         # ai-goods-backend/services/ML/ml/models/weights/model.onnx
-        weights_path = "ml/models/weights/model.onnx"
 
-        self.sess = onnxruntime.InferenceSession(weights_path)
+        while len(model_paths) > 0:
+            path = model_paths.pop(0)
+            try:
+                self.sess = onnxruntime.InferenceSession(path)
+                break
+            except Exception:
+                continue
+        else:
+            raise Exception("Can't load model")
+
         self.input_name = self.sess.get_inputs()[0].name
 
     def run(self, image: np.ndarray) -> list[float]:
