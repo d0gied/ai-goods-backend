@@ -224,13 +224,13 @@ idna = ">=2.0.0"
 
 [[package]]
 name = "global-modules"
-version = "0.1.0.29"
+version = "0.1.0.34"
 description = ""
 category = "main"
 optional = false
 python-versions = "^3.11"
 files = []
-develop = false
+develop = true
 
 [package.dependencies]
 numpy = "^1.26.2"
@@ -884,4 +884,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "2ba888ad3ebcb34372f83e11419d54a8b6f2f0a21a3d8fa9cb85496f30eebe91"
+content-hash = "cbf07fc0b45513a624aa8c448e43969fc940c0f4c7fe7f00c16d81f7b1b58608"

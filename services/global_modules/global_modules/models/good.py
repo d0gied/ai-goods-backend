@@ -17,8 +17,8 @@ from ..db.schemas.good import AddGoodSchema
 
 
 class Good(BaseModel):
-    id: int = Field(..., description="Good ID")
-    name: str = Field(..., description="Good name")
+    id: int | None = Field(None, description="Good ID")
+    name: str | None = Field(None, description="Good name")
     created_at: datetime | None = Field(None, description="Creation timestamp")
     updated_at: datetime | None = Field(None, description="Update timestamp")
     price: float | None = Field(None, description="Price")
@@ -55,7 +55,7 @@ class Good(BaseModel):
             created_at=orm.created_at,
             updated_at=orm.updated_at,
             price=orm.price,
-            images=orm.images,
+            images=[image.url for image in orm.images],
             description=orm.description,
             source=orm.source,
             source_id=orm.source_id,
@@ -69,9 +69,10 @@ GoodDumped = NewType("GoodDumped", dict[str, Any])
 
 
 class GoodEmbedding(BaseModel):
-    id: int = Field(..., description="Good ID")
+    id: int | None = Field(None, description="Good ID")
     vector: list[float] = Field(..., description="Good embedding vector")
 
+    @classmethod
     def from_orm(cls, orm: GoodORM, target: Literal["image", "name", "name_image"]):
         matches = {
             "image": orm.image_embedding,

@@ -21,6 +21,10 @@ help:
 	@echo "    make login-api           Login to api container"
 	@echo "    make db-shell            Login to timescale container and open psql shell"
 	@echo "    make help                Show this help message and exit"
+
+rebuild_global:
+	cd global_modules && ./rebuild_global_modules.sh
+
 build:
 	docker-compose build
 build-api:

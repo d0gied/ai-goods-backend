@@ -8,7 +8,7 @@ packages = [{include = "vector_storage"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-global_modules = { path = "../global_modules" }
+global_modules = { path = "../global_modules", develop = true }
 faiss-cpu = "^1.7.4"
 langchain = "^0.0.344"
 celery = "^5.3.6"

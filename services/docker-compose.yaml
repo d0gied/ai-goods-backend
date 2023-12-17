@@ -143,5 +143,7 @@ services:
     depends_on:
       - rabbitmq
       - redis
+    volumes:
+      - ./data/vector_storage:/app/vector_storage/storage
     env_file:
       - .env

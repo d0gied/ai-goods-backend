@@ -9,12 +9,12 @@ class SearchTask(BaseTask):
     def __init__(self, name: str):
         super().__init__(f"search.{name}")
 
-    def run(self, good: dict) -> list[dict]:
+    def run(self, good: dict, limit: int = 100, threshold: float = None) -> list[dict]:
         """Run task"""
         good = GoodEmbedding.model_validate(good)
 
         storage = get_storage()
-        return self.search(storage, good)
+        return self.search(storage, good, limit=limit, threshold=threshold)
 
     def search(
         self,

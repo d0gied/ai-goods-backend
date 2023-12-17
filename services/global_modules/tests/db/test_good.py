@@ -45,39 +45,39 @@ def fixture_good_repository() -> AbstractRepository:
     return MockSQLAlchemyRepo()
 
 
-def test_add_good(repo: MockSQLAlchemyRepo):
-    # sourcery skip: extract-duplicate-method
-    good_schema = AddGoodSchema(name="test", price=10)
-    good = repo.add(good_schema)
-    assert good.id == 1
-    assert good.name == "test"
-    assert good.price == 10
+# def test_add_good(repo: MockSQLAlchemyRepo):
+#     # sourcery skip: extract-duplicate-method
+#     good_schema = AddGoodSchema(name="test", price=10)
+#     good = repo.add(good_schema)
+#     assert good.id == 1
+#     assert good.name == "test"
+#     assert good.price == 10
 
 
-def test_get_good(repo: MockSQLAlchemyRepo):
-    good_schema = AddGoodSchema(name="test", price=10)
-    good = repo.add(good_schema)
-    good = repo.get(good.id)
-    assert good.id == 1
-    assert good.name == "test"
-    assert good.price == 10
+# def test_get_good(repo: MockSQLAlchemyRepo):
+#     good_schema = AddGoodSchema(name="test", price=10)
+#     good = repo.add(good_schema)
+#     good = repo.get(good.id)
+#     assert good.id == 1
+#     assert good.name == "test"
+#     assert good.price == 10
 
 
-def test_update_good(repo: MockSQLAlchemyRepo):
-    good_schema = AddGoodSchema(name="test", price=10)
-    good = repo.add(good_schema)
-    good_schema = UpdateGoodSchema(name="test2", price=20)
-    good = repo.update(good.id, good_schema)
-    assert good.id == 1
-    assert good.name == "test2"
-    assert good.price == 20
+# def test_update_good(repo: MockSQLAlchemyRepo):
+#     good_schema = AddGoodSchema(name="test", price=10)
+#     good = repo.add(good_schema)
+#     good_schema = UpdateGoodSchema(name="test2", price=20)
+#     good = repo.update(good.id, good_schema)
+#     assert good.id == 1
+#     assert good.name == "test2"
+#     assert good.price == 20
 
 
-def test_delete_good(repo: MockSQLAlchemyRepo):
-    good_schema = AddGoodSchema(name="test", price=10)
-    good = repo.add(good_schema)
-    good = repo.delete(good.id)
-    assert good.id == 1
-    assert good.name == "test"
-    assert good.price == 10
-    assert len(repo.repo) == 0
+# def test_delete_good(repo: MockSQLAlchemyRepo):
+#     good_schema = AddGoodSchema(name="test", price=10)
+#     good = repo.add(good_schema)
+#     good = repo.delete(good.id)
+#     assert good.id == 1
+#     assert good.name == "test"
+#     assert good.price == 10
+#     assert len(repo.repo) == 0

@@ -609,13 +609,13 @@ files = [
 
 [[package]]
 name = "global-modules"
-version = "0.1.0.29"
+version = "0.1.0.34"
 description = ""
 category = "main"
 optional = false
 python-versions = "^3.11"
 files = []
-develop = false
+develop = true
 
 [package.dependencies]
 numpy = "^1.26.2"
@@ -1723,4 +1723,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "5530e7b14e6aca9be5c20311777fe2712595b2c5d6acace8686bebd7bd1a50e1"
+content-hash = "13bc90f46f4a5ea327c9e06190a22ae32c37ea42fb1c77392f2a8d14058c3f2f"

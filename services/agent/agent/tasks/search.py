@@ -4,6 +4,7 @@ from typing import Literal
 from celery import chain, current_app, signature
 from celery.result import AsyncResult
 from global_modules.db.repositories import GoodRepository
+from global_modules.db.uow import UnitOfWork
 from global_modules.enums import CeleryQueue
 from global_modules.models import Good, GoodDumped, GoodEmbedding, GoodEmbeddingDumped
 
@@ -15,8 +16,11 @@ class LoadGoodsFromDBByIdsTask(BaseTask):
         super().__init__("load_goods_from_db_by_ids")
 
     def run(self, ids: list[int]) -> list[GoodDumped]:
-        goods = GoodRepository().get_by_ids(ids)
-        return [Good.from_orm(good).model_dump() for good in goods]
+        good_ids = [id for id in ids if id != -1]
+
+        with UnitOfWork() as uow:
+            goods = uow.goods.get_by_ids(good_ids)
+            return [Good.from_orm(good).model_dump() for good in goods]
 
 
 class SearchTask(BaseTask):
@@ -36,7 +40,7 @@ class SearchTask(BaseTask):
             queue=f"ml",
         )
         search_task = signature(
-            f"storage.tasks.search.{self.target}",
+            f"storage.tasks.search.{target}",
             kwargs={"limit": limit, "threshold": threshold},
             queue="storage",
         )

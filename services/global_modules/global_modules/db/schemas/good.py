@@ -18,6 +18,15 @@ class AddGoodSchema(AddSchemaType):
     is_processed: bool | None = Field(None, description="Is good processed")
 
 
+class AddImageSchema(AddSchemaType):
+    url: str = Field(None, description="Image URL")
+    good_id: int = Field(None, description="Good ID")
+
+
+class UpdateImageSchema(UpdateSchemaType):
+    url: str | None = Field(None, description="Image URL")
+
+
 class UpdateGoodSchema(UpdateSchemaType):
     name: str | None = Field(None, description="Good name")
     price: float | None = Field(None, description="Price")
