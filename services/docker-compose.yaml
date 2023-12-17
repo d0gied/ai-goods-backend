@@ -63,17 +63,8 @@ services:
       - ./data/pgadmin:/var/lib/pgadmin
 
   api:
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-    image: api
-=======
     image: goodsai/api
     container_name: api
->>>>>>> Stashed changes
-=======
-    image: goodsai-api
-    container_name: api
->>>>>>> 52e47f613b78a978678e16f9c8dac8e567dc96e3
     build:
       args:
         - TARGET_SERVICE=api
@@ -92,17 +83,8 @@ services:
       - redis
   
   parser_worker:
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-    image: parser_worker
-=======
     image: goodsai/parser
     container_name: parser_worker
->>>>>>> Stashed changes
-=======
-    image: goodsai-parser
-    container_name: parser_worker
->>>>>>> 52e47f613b78a978678e16f9c8dac8e567dc96e3
     build:
       args:
         - TARGET_SERVICE=parser
@@ -117,17 +99,8 @@ services:
       - .env
   
   agent_worker:
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-    image: agent_worker
-=======
     image: goodsai/agent
     container_name: agent_worker
->>>>>>> Stashed changes
-=======
-    image: goodsai-agent
-    container_name: agent_worker
->>>>>>> 52e47f613b78a978678e16f9c8dac8e567dc96e3
     build:
       args:
         - TARGET_SERVICE=agent
@@ -142,17 +115,8 @@ services:
       - .env
   
   ml_worker:
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-    image: ml_worker
-=======
     image: goodsai/ml
     container_name: ml_worker
->>>>>>> Stashed changes
-=======
-    image: goodsai-ml
-    container_name: ml_worker
->>>>>>> 52e47f613b78a978678e16f9c8dac8e567dc96e3
     build:
       args:
         - TARGET_SERVICE=ML
@@ -164,19 +128,11 @@ services:
       - rabbitmq
       - redis
     env_file:
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-=======
       - .env
+
 
   vector_storage:
     image: goodsai/vector-storage
-=======
-      - .env
-
-  vector_storage:
-    image: goodsai-vector-storage
->>>>>>> 52e47f613b78a978678e16f9c8dac8e567dc96e3
     container_name: vector_storage
     build:
       args:
@@ -191,8 +147,4 @@ services:
     volumes:
       - ./data/vector_storage:/app/vector_storage/storage
     env_file:
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
->>>>>>> 52e47f613b78a978678e16f9c8dac8e567dc96e3
       - .env
