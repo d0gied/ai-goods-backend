@@ -14,15 +14,19 @@ app = Celery(
     backend=CELERY_RESULT_BACKEND,
 )
 
+QUEUE = "parser"
+
 sources = {
-    "wildberries": WildberriesParser,
-    "alibaba": AlibabaParser,
-    "ozon": OZONParser,
+    "wildberries": WildberriesParser(),
+    "alibaba": AlibabaParser(),
+    "ozon": OZONParser(),
 }
 
 for source, parser in sources.items():
-    app.register_task(get_goods_task_builder(source, parser), queue=f"parse.{source}")
-    app.register_task(get_good_task_builder(source, parser), queue=f"parse.{source}")
+    app.register_task(get_goods_task_builder(source, parser), queue=QUEUE)
+    print(f"Register task: {source}, queue: {QUEUE}")
+    app.register_task(get_good_task_builder(source, parser), queue=QUEUE)
+    print(f"Register task: {source}, queue: {QUEUE}")
 
 parser = ArgumentParser(description="Run vector storage worker")
 parser.add_argument("--tasks", help="get list of tasks", action="store_true")

@@ -1,84 +1,79 @@
+import time
 from typing import Literal
 
-from celery import current_app
+from celery import chain, current_app, signature
 from celery.result import AsyncResult
 from global_modules.db.repositories import GoodRepository
+from global_modules.db.uow import UnitOfWork
 from global_modules.enums import CeleryQueue
 from global_modules.models import Good, GoodDumped, GoodEmbedding, GoodEmbeddingDumped
 
 from .base import BaseTask
 
 
-class SearchByXXXTask(BaseTask):
-    def __init__(self, name: Literal["name", "image", "name_image"]):
-        super().__init__("search_by_{}".format(name))
-        self.target = name
+class LoadGoodsFromDBByIdsTask(BaseTask):
+    def __init__(self):
+        super().__init__("load_goods_from_db_by_ids")
 
-    def run(
-        self, good: GoodDumped, *, limit: int = 100, threshold: float = None
-    ) -> list[GoodDumped]:
-        good_model = Good.model_validate(good)
+    def run(self, ids: list[int]) -> list[GoodDumped]:
+        good_ids = [id for id in ids if id != -1]
 
-        embed_task: AsyncResult = current_app.send_task(
-            f"ml.tasks.process_{self.target}",
-            args=[good],
-            queue=f"ml.{self.target}",
-        )
-
-        embedding: GoodEmbeddingDumped = embed_task.get()
-
-        search_task = current_app.send_task(
-            f"storage.tasks.search.{self.target}",
-            args=[embedding],
-            kwargs={"limit": limit, "threshold": threshold},
-            queue="storage",
-        )
-        ids = search_task.get()
-        goods = GoodRepository().get_by_ids(ids)
-        good_dumps: list[GoodDumped] = [
-            Good.from_orm(good).model_dump() for good in goods
-        ]
-
-        return good_dumps
+        with UnitOfWork() as uow:
+            goods = uow.goods.get_by_ids(good_ids)
+            return [Good.from_orm(good).model_dump() for good in goods]
 
 
 class SearchTask(BaseTask):
     def __init__(self):
         super().__init__("search")
 
+    def get_chain(
+        self,
+        target: Literal["name", "image", "image_name"],
+        good: GoodDumped,
+        limit: int = 100,
+        threshold: float = None,
+    ):
+        embed_task = signature(
+            f"ml.tasks.process_{target}",
+            args=[good],
+            queue=f"ml",
+        )
+        search_task = signature(
+            f"storage.tasks.search.{target}",
+            kwargs={"limit": limit, "threshold": threshold},
+            queue="storage",
+        )
+        db_task = LoadGoodsFromDBByIdsTask().signature(queue="agent")
+
+        return chain(embed_task, search_task, db_task)
+
     def run(
-        self, good: GoodDumped, *, limit: int = 100, threshold: float = None
-    ) -> list[GoodDumped]:
+        self,
+        good: GoodDumped,
+        *,
+        limit: int = 100,
+        threshold: float = None,
+    ) -> list[GoodEmbeddingDumped]:
         good_model = Good.model_validate(good)
-        assert good_model.id is not None
+        has_image = good_model.images is not None and len(good_model.images) > 0
+        has_name = good_model.name is not None and len(good_model.name) > 0
 
-        has_name = good_model.name is not None
-        has_image = good_model.image is not None
-
-        target: Literal["name", "image", "name_image"] = None
-        if has_name and has_image:
-            target = "name_image"
-        elif has_name:
-            target = "name"
+        target: str = None
+        if has_image and has_name:
+            target = "image_name"
         elif has_image:
             target = "image"
+        elif has_name:
+            target = "name"
         else:
-            raise ValueError("Good must have name or image")
+            raise ValueError("Good has no name or image")
 
-        SearchByXXXTask(target)
-
-        task = SearchByXXXTask(target).apply_async(
-            args=[good],
-            kwargs={"limit": limit, "threshold": threshold},
-            queue=SearchByXXXTask.queue,
-        )
-        return task.get()
+        return self.get_chain(target, good, limit, threshold)()
 
 
 def get_tasks():
     return [
-        SearchByXXXTask("name"),
-        SearchByXXXTask("image"),
-        SearchByXXXTask("name_image"),
         SearchTask(),
+        LoadGoodsFromDBByIdsTask(),
     ]

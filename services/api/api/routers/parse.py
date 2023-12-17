@@ -1,7 +1,12 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import JSONResponse
 
 from ..tasks.parse import ParseWildberriesTask
+from ..utils import JSONResponse
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/parse",
@@ -24,18 +29,20 @@ def start_parse_wildberries(request: str, limit: int = 100):
     )
 
 
-@router.get("/wildberries/{task_id}")
-def get_parse_wildberries(task_id: str):
-    """Get parse wildberries status"""
-    task = ParseWildberriesTask()
-    task = task.get_status(task_id)
-    if task is None:
-        raise HTTPException(status_code=404, detail="Task not found")
+# @router.get("/wildberries/{task_id}")
+# def get_parse_wildberries(task_id: str):
+#     """Get parse wildberries status"""
+#     task = ParseWildberriesTask()
+#     task = task.get_status(task_id)
+#     if task is None:
+#         raise HTTPException(status_code=404, detail="Task not found")
 
-    return JSONResponse(
-        {
-            "task_id": task.id,
-            "status": task.state,
-            "result": task.result,
-        }
-    )
+#     response = {
+#         "status": task.state,
+#     }
+#     if task.state == "SUCCESS":
+#         response["result"] = task.result
+#     else:
+#         response["error"] = task.traceback
+
+#     return JSONResponse(response)

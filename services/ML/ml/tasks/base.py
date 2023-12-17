@@ -1,6 +1,7 @@
 from celery import Task
 from global_modules.models import Good, GoodEmbedding
 
+
 class BaseTask(Task):
     """Base task class"""
 
@@ -11,7 +12,8 @@ class BaseTask(Task):
     def run(self, *args, **kwargs):
         """Run task"""
         raise NotImplementedError("Subclasses must implement this method")
-    
+
+
 class BaseGoodToEmbeddingTask(BaseTask):
     """Base task class"""
 

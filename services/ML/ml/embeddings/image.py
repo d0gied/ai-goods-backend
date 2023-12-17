@@ -5,6 +5,7 @@ import numpy as np
 import requests
 from PIL import Image
 
+from ..models.image import MatchingModel, get_matching_model, normalize_image
 from .base import Embedding
 
 
@@ -28,9 +29,13 @@ class ImageEmbedding(Embedding):
     def get_embedding(self, data: str, **kwargs) -> list[float]:
         """Get embedding from data"""
         image = self.load_image(data)
-        # TODO: needs to be implemented
-        pass
-        return [0] * self.size
+
+        image = normalize_image(image)
+
+        model = get_matching_model()
+        emb = model.run(image)
+
+        return emb
 
     def get_embeddings(self, data: list[str], **kwargs) -> list[list[float]]:
         """Get embeddings from data"""

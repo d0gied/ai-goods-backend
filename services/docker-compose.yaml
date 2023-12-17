@@ -50,13 +50,30 @@ services:
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
 
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - "5050:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=$PGADMIN_DEFAULT_EMAIL # set in .env file
+      - PGADMIN_DEFAULT_PASSWORD=$PGADMIN_DEFAULT_PASSWORD # set in .env file
+    depends_on:
+      - postgres
+    volumes:
+      - ./data/pgadmin:/var/lib/pgadmin
+
   api:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
     image: api
 =======
     image: goodsai/api
     container_name: api
 >>>>>>> Stashed changes
+=======
+    image: goodsai-api
+    container_name: api
+>>>>>>> 52e47f613b78a978678e16f9c8dac8e567dc96e3
     build:
       args:
         - TARGET_SERVICE=api
@@ -75,16 +92,21 @@ services:
       - redis
   
   parser_worker:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
     image: parser_worker
 =======
     image: goodsai/parser
     container_name: parser_worker
 >>>>>>> Stashed changes
+=======
+    image: goodsai-parser
+    container_name: parser_worker
+>>>>>>> 52e47f613b78a978678e16f9c8dac8e567dc96e3
     build:
       args:
         - TARGET_SERVICE=parser
-    command: celery -A run worker -l info -Q parser -n parser_worker@%h --concurrency=4
+    command: celery -A run worker -l info -n parser_worker@%h --concurrency=4 -Q parser
     environment:
       - CELERY_BROKER_URL=pyamqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -95,16 +117,21 @@ services:
       - .env
   
   agent_worker:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
     image: agent_worker
 =======
     image: goodsai/agent
     container_name: agent_worker
 >>>>>>> Stashed changes
+=======
+    image: goodsai-agent
+    container_name: agent_worker
+>>>>>>> 52e47f613b78a978678e16f9c8dac8e567dc96e3
     build:
       args:
         - TARGET_SERVICE=agent
-    command: celery -A run worker -l info -Q agent -n agent_worker@%h --concurrency=4
+    command: celery -A run worker -l info -n agent_worker@%h --concurrency=4 -Q agent
     environment:
       - CELERY_BROKER_URL=pyamqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -115,16 +142,21 @@ services:
       - .env
   
   ml_worker:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
     image: ml_worker
 =======
     image: goodsai/ml
     container_name: ml_worker
 >>>>>>> Stashed changes
+=======
+    image: goodsai-ml
+    container_name: ml_worker
+>>>>>>> 52e47f613b78a978678e16f9c8dac8e567dc96e3
     build:
       args:
         - TARGET_SERVICE=ML
-    command: celery -A run worker -l info -Q ml -n ml_worker@%h --concurrency=4
+    command: celery -A run worker -l info -n ml_worker@%h --concurrency=4 -Q ml
     environment:
       - CELERY_BROKER_URL=pyamqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -132,12 +164,19 @@ services:
       - rabbitmq
       - redis
     env_file:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 =======
       - .env
 
   vector_storage:
     image: goodsai/vector-storage
+=======
+      - .env
+
+  vector_storage:
+    image: goodsai-vector-storage
+>>>>>>> 52e47f613b78a978678e16f9c8dac8e567dc96e3
     container_name: vector_storage
     build:
       args:
@@ -152,5 +191,8 @@ services:
     volumes:
       - ./data/vector_storage:/app/vector_storage/storage
     env_file:
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> 52e47f613b78a978678e16f9c8dac8e567dc96e3
       - .env

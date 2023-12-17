@@ -2,7 +2,7 @@
 FROM python:3.11.5-slim
 
 # make it required
-ARG TARGET_SERVICE 
+ARG TARGET_SERVICE
 
 WORKDIR /app
 
@@ -12,10 +12,13 @@ COPY ${TARGET_SERVICE}/pyproject.toml ${TARGET_SERVICE}/poetry.lock ./${TARGET_S
 
 COPY ./global_modules ./global_modules
 
+
 WORKDIR /app/${TARGET_SERVICE}
 
 RUN poetry config virtualenvs.create false \
     && poetry install --without dev --no-interaction --no-ansi
+
+# Copy the rest of the code only if LOAD_SOURCE_CODE is true
 
 COPY ${TARGET_SERVICE} /app/${TARGET_SERVICE}
 

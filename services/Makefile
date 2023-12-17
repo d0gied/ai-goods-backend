@@ -26,6 +26,7 @@ rebuild_global:
 	cd global_modules && ./rebuild_global_modules.sh
 
 build:
+<<<<<<< HEAD
 	docker compose build
 build-api:
 	docker compose build api
@@ -55,3 +56,34 @@ logs:
 	docker compose logs -f
 ps:
 	docker compose ps -a --services --filter "status=running"
+=======
+	docker-compose build
+build-api:
+	docker-compose build api
+build-parser:
+	docker-compose build parser_worker
+build-ml:
+	docker-compose build ml_worker
+build-agent:
+	docker-compose build agent_worker
+build-storage:
+	docker-compose build vector_storage
+
+up:
+	docker-compose up -d
+start:
+	docker-compose start
+down:
+	docker-compose down
+destroy:
+	docker-compose down -v
+stop:
+	docker-compose stop
+restart:
+	docker-compose restart
+
+logs:
+	docker-compose logs -f
+ps:
+	docker-compose ps -a --services --filter "status=running"
+>>>>>>> 52e47f613b78a978678e16f9c8dac8e567dc96e3

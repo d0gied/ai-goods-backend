@@ -112,3 +112,23 @@ def test_good_embedding_transferred():
 
     assert good_embedding_loaded.id == good_embedding.id
     assert good_embedding_loaded.vector == good_embedding.vector
+
+
+def test_input_good():
+    d = {
+        "id": None,
+        "name": "Мышь",
+        "created_at": None,
+        "updated_at": None,
+        "price": None,
+        "images": None,
+        "description": None,
+        "source_id": None,
+        "source": None,
+        "url": None,
+        "rating": None,
+        "reviews": None,
+    }
+    good = Good.model_validate(d)
+    assert isinstance(good, Good)
+    assert good.name == "Мышь"
