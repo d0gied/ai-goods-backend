@@ -15,8 +15,9 @@ class Good(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow)
     price = Column(Float, index=True)
-    images = Column(String)
+    images = relationship("Image", back_populates="good")
     description = Column(String)
+    source_id = Column(String)
     source = Column(String)
     url = Column(String)
     rating = Column(Integer)
@@ -31,3 +32,15 @@ class Good(Base):
 
     def __repr__(self) -> str:
         return f"<Good {self.id}: name={self.name}, price={self.price}>"
+
+
+class Image(Base):
+    __tablename__ = "images"
+
+    id = Column(Integer, primary_key=True, index=True)
+    good_id = Column(Integer, ForeignKey("goods.id"))
+    url = Column(String)
+    good = relationship("Good", back_populates="images")
+
+    def __repr__(self) -> str:
+        return f"<Image {self.id}: good_id={self.good_id}, image={self.image}>"

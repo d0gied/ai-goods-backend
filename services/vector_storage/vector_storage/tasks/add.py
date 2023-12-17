@@ -9,8 +9,10 @@ class AddTask(BaseTask):
     def __init__(self, name: str):
         super().__init__(f"add.{name}")
 
-    def run(self, goods: list[dict]):
+    def run(self, goods: list[dict] | dict):
         """Run task"""
+        if isinstance(goods, dict):
+            goods = [goods]
         goods = [GoodEmbedding.model_validate(good) for good in goods]
 
         storage = get_storage()

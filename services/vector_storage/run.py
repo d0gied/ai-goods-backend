@@ -6,6 +6,7 @@ from celery.utils.log import get_task_logger
 from global_modules.enums import CeleryQueue
 from vector_storage.config import CELERY_BROKER_URL, CELERY_RESULT_BACKEND
 from vector_storage.tasks import get_tasks
+from global_modules.db.repositories import GoodRepository
 
 app = Celery(
     __name__,
@@ -16,7 +17,7 @@ app = Celery(
 for task in get_tasks():
     app.register_task(
         task,
-        queue=CeleryQueue.STORAGE.value,
+        queue="storage",
     )
 
 logger = get_task_logger(__name__)

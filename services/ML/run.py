@@ -13,22 +13,24 @@ app = Celery(
     backend=CELERY_RESULT_BACKEND,
 )
 
+QUEUE = "ml"
+
 for task in get_image_tasks():
     app.register_task(
         task,
-        queue=task.queue,
+        queue=QUEUE,
     )
 
 for task in get_name_tasks():
     app.register_task(
         task,
-        queue=task.queue,
+        queue=QUEUE,
     )
 
 for task in get_name_image_tasks():
     app.register_task(
         task,
-        queue=task.queue,
+        queue=QUEUE,
     )
 
 logger = get_task_logger(__name__)

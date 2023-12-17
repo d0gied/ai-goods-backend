@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-global_modules = { path = "../global_modules" }
+global_modules = { path = "../global_modules", develop = true }
 celery = "^5.3.6"
 redis = "^5.0.1"
 

@@ -350,7 +350,7 @@ files = [
 
 [[package]]
 name = "global-modules"
-version = "0.1.0.21"
+version = "0.1.0.34"
 description = ""
 optional = false
 python-versions = "^3.11"

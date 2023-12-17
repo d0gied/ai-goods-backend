@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 from agent.config import CELERY_BROKER_URL, CELERY_RESULT_BACKEND
 from agent.tasks import get_tasks
 from celery import Celery
+from global_modules.db.db import create_tables
 
 app = Celery(
     __name__,
@@ -11,12 +12,14 @@ app = Celery(
 )
 
 for task in get_tasks():
-    app.register_task(task, queue=task.queue)
+    app.register_task(task, queue="agent")
 
 parser = ArgumentParser(description="Run vector storage worker")
 parser.add_argument("--tasks", help="get list of tasks", action="store_true")
 parser.add_argument("--worker", help="run worker", action="store_true")
 parser.add_argument("--test", help="run test", action="store_true")
+
+create_tables()
 
 if __name__ == "__main__":
     args = parser.parse_args()

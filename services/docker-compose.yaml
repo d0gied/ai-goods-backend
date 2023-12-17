@@ -50,8 +50,21 @@ services:
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
 
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - "5050:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=$PGADMIN_DEFAULT_EMAIL # set in .env file
+      - PGADMIN_DEFAULT_PASSWORD=$PGADMIN_DEFAULT_PASSWORD # set in .env file
+    depends_on:
+      - postgres
+    volumes:
+      - ./data/pgadmin:/var/lib/pgadmin
+
   api:
-    image: api
+    image: goodsai-api
+    container_name: api
     build:
       args:
         - TARGET_SERVICE=api
@@ -70,11 +83,12 @@ services:
       - redis
   
   parser_worker:
-    image: parser_worker
+    image: goodsai-parser
+    container_name: parser_worker
     build:
       args:
         - TARGET_SERVICE=parser
-    command: celery -A run worker -l info -Q parser -n parser_worker@%h --concurrency=4
+    command: celery -A run worker -l info -n parser_worker@%h --concurrency=4 -Q parser
     environment:
       - CELERY_BROKER_URL=pyamqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -85,11 +99,12 @@ services:
       - .env
   
   agent_worker:
-    image: agent_worker
+    image: goodsai-agent
+    container_name: agent_worker
     build:
       args:
         - TARGET_SERVICE=agent
-    command: celery -A run worker -l info -Q agent -n agent_worker@%h --concurrency=4
+    command: celery -A run worker -l info -n agent_worker@%h --concurrency=4 -Q agent
     environment:
       - CELERY_BROKER_URL=pyamqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -100,16 +115,35 @@ services:
       - .env
   
   ml_worker:
-    image: ml_worker
+    image: goodsai-ml
+    container_name: ml_worker
     build:
       args:
         - TARGET_SERVICE=ML
-    command: celery -A run worker -l info -Q ml -n ml_worker@%h --concurrency=4
+    command: celery -A run worker -l info -n ml_worker@%h --concurrency=4 -Q ml
     environment:
       - CELERY_BROKER_URL=pyamqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
       - rabbitmq
       - redis
+    env_file:
+      - .env
+
+  vector_storage:
+    image: goodsai-vector-storage
+    container_name: vector_storage
+    build:
+      args:
+        - TARGET_SERVICE=vector_storage
+    command: celery -A run worker -l info -n vector_storage_worker@%h --concurrency=4 -Q storage
+    environment:
+      - CELERY_BROKER_URL=pyamqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - rabbitmq
+      - redis
+    volumes:
+      - ./data/vector_storage:/app/vector_storage/storage
     env_file:
       - .env

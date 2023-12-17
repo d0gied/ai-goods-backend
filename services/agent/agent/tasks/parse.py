@@ -1,171 +1,191 @@
 from typing import Literal
 
-from celery import (
-    current_app,
-    shared_task,
-    current_task,
-    chord,
-    chain,
-    group,
-    signature,
-    Task,
-)
+from celery import chain, chunks, group, signature
 from celery.result import AsyncResult
+from global_modules.db.models.good import Good as GoodORM
 from global_modules.db.repositories import GoodRepository
 from global_modules.db.schemas import UpdateGoodEmbeddingsSchema
+from global_modules.db.services.good import GoodService
+from global_modules.db.uow import UnitOfWork
 from global_modules.enums import CeleryQueue
 from global_modules.models import Good, GoodDumped, GoodEmbedding, GoodEmbeddingDumped
 
 from .base import BaseTask
 
 
-class EmbedAndSaveImageTask(BaseTask):
-    """Embed and save"""
-
+class AddGoodsToDBAndFilterTask(BaseTask):
     def __init__(self):
-        super().__init__("embed_and_save.image")
+        super().__init__("add_to_db")
 
-    def run(self, good: GoodDumped):
-        good_model = Good.model_validate(good)
+    def run(self, goods: list[GoodDumped], force_reprocess: bool = False):
+        good_service = GoodService()
+        good_models = [Good.model_validate(good) for good in goods]
 
-        assert good_model.id is not None  # noqa: S101
+        for good in good_models:
+            if good.source_id is None:
+                good.source_id = str(good.id)
 
-        embed_task = current_app.send_task(
-            "ml.tasks.process_image",
-            args=[good],
-            queue=CeleryQueue.ML_IMAGE,
+        existing_goods = good_service.get_by_source_ids(
+            source=good_models[0].source,
+            ids=[good.source_id for good in good_models],
         )
 
-        embedding: GoodEmbeddingDumped = embed_task.get()
-        embed_model = GoodEmbedding.model_validate(embedding)
-        update_schema = UpdateGoodEmbeddingsSchema(
-            image_embedding=embed_model.image_embedding,
-        )
-        GoodRepository().update(good_model.id, update_schema)
+        db_goods = {
+            good.source_id: good
+            for good in existing_goods
+            if good.source_id is not None
+        }
 
-        save_task = current_app.send_task(
-            "storage.tasks.add.image",
-            args=[embedding],
-            queue=CeleryQueue.STORAGE_IMAGE,
-        )
-        save_task.get()
+        schemas = []
+        needs_processing = []
+        for good in good_models:
+            db_good: Good = db_goods.get(good.source_id, None)
+
+            if db_good is None:
+                schemas.append(good.to_add_schema())
+                needs_processing.append(good)
+            else:
+                if force_reprocess or db_good.is_processed is False:
+                    needs_processing.append(good)
+
+        # add new goods to db and update dict with new goods
+        good_models = good_service.add_many(schemas)
+        db_goods.update({good.source_id: good for good in good_models})
+
+        # get valid good ids from db
+        for good in needs_processing:
+            good.id = db_goods[good.source_id].id
+
+        # dump goods
+        needs_processing = [good.model_dump() for good in needs_processing]
+
+        return needs_processing
 
 
-class EmbedAndSaveNameTask(BaseTask):
-    """Embed and save"""
-
+class AddGoodEmbeddingsToDBTask(BaseTask):
     def __init__(self):
-        super().__init__("embed_and_save.name")
+        super().__init__("add_embeddings_to_db")
+        self.time_limit = 10  # 5 seconds
+        self.soft_time_limit = 5  # 5 seconds
+        self.max_retries = 3
 
-    def run(self, good: GoodDumped):
-        good_model = Good.model_validate(good)
-        assert good_model.id is not None  # noqa: S101
-
-        embed_task = current_app.send_task(
-            "ml.tasks.process_name",
-            args=[good],
-            queue=CeleryQueue.ML_NAME,
-        )
-
-        embedding: GoodEmbeddingDumped = embed_task.get()
-        embed_model = GoodEmbedding.model_validate(embedding)
-        update_schema = UpdateGoodEmbeddingsSchema(
-            name_embedding=embed_model.name_embedding,
-        )
-        GoodRepository().update(good_model.id, update_schema)
-
-        save_task = current_app.send_task(
-            "storage.tasks.add.name",
-            args=[embedding],
-            queue=CeleryQueue.STORAGE_NAME,
-        )
-        save_task.get()
+    def run(
+        self,
+        good: GoodEmbeddingDumped,
+        target: Literal["image", "name", "name_image"],
+    ):
+        good_embedding = GoodEmbedding.model_validate(good)
+        matches = {
+            "image": UpdateGoodEmbeddingsSchema(
+                image_embedding=good_embedding.vector, is_processed=True
+            ),
+            "name": UpdateGoodEmbeddingsSchema(
+                name_embedding=good_embedding.vector, is_processed=True
+            ),
+            "name_image": UpdateGoodEmbeddingsSchema(
+                name_image_embedding=good_embedding.vector, is_processed=True
+            ),
+        }
+        with UnitOfWork() as uow:
+            uow.goods.update(good_embedding.id, matches[target])
+        return good
 
 
-class EmbedAndSaveNameImageTask(BaseTask):
-    """Embed and save"""
-
+class EmbedAndSaveGoodsTask(BaseTask):
     def __init__(self):
-        super().__init__("embed_and_save.name_image")
+        super().__init__(f"embed_and_save_goods")
+        self.time_limit = 10  # 10 seconds
+        self.soft_time_limit = 10  # 10 seconds
+        self.max_retries = 3
 
-    def run(self, good: GoodDumped):
-        good_model = Good.model_validate(good)
-        assert good_model.id is not None  # noqa: S101
-
-        embed_task = current_app.send_task(
-            "ml.tasks.process_name_image",
+    def get_chain(
+        self, good: GoodDumped, target: Literal["image", "name", "name_image"]
+    ):
+        embed_task = signature(
+            f"ml.tasks.process_{target}",
             args=[good],
-            queue=CeleryQueue.ML_NAME_IMAGE,
+            queue="ml",
+        )
+        db_task = AddGoodEmbeddingsToDBTask().s(target=target).set(queue="agent")
+        storage_task = signature(
+            f"storage.tasks.add.{target}",
+            queue="storage",
         )
 
-        embedding: GoodEmbeddingDumped = embed_task.get()
-        embed_model = GoodEmbedding.model_validate(embedding)
-        update_schema = UpdateGoodEmbeddingsSchema(
-            name_image_embedding=embed_model.name_image_embedding,
-        )
-        GoodRepository().update(good_model.id, update_schema)
+        return chain(embed_task, db_task, storage_task)
 
-        save_task = current_app.send_task(
-            "storage.tasks.add.name_image",
-            args=[embedding],
-            queue=CeleryQueue.STORAGE_NAME_IMAGE,
-        )
-        save_task.get()
+    def run(
+        self,
+        goods: list[GoodDumped],
+        target: Literal["name", "image", "name_image", "all"] = "all",
+    ):
+        embed_tasks = []
+        for good in goods:
+            good_model = Good.model_validate(good)
+            has_image = good_model.images is not None and len(good_model.images) > 0
+            has_name = good_model.name is not None and len(good_model.name) > 0
+
+            if target == "all":
+                if has_image and has_name:
+                    embed_tasks.append(self.get_chain(good, "name_image"))
+                if has_image:
+                    embed_tasks.append(self.get_chain(good, "image"))
+                if has_name:
+                    embed_tasks.append(self.get_chain(good, "name"))
+            else:
+                if target == "image" and has_image:
+                    embed_tasks.append(self.get_chain(good, "image"))
+                if target == "name" and has_name:
+                    embed_tasks.append(self.get_chain(good, "name"))
+                if target == "name_image" and has_image and has_name:
+                    embed_tasks.append(self.get_chain(good, "name_image"))
+
+        return group(embed_tasks)()
+
+
+class ReEmbedAllGoodsTask(BaseTask):
+    def __init__(self):
+        super().__init__(f"reembed_all_goods")
+        # self.time_limit = 10  # 10 seconds
+        # self.soft_time_limit = 10  # 10 seconds
+        # self.max_retries = 3
+
+    def run(self, target: Literal["name", "image", "name_image", "all"], **kwargs):
+        with UnitOfWork() as uow:
+            goods = uow.goods.get_all()
+            goods = [Good.from_orm(good).model_dump() for good in goods]
+
+        return EmbedAndSaveGoodsTask().run(goods, target=target)
 
 
 class ParseTask(BaseTask):
-    """Parse wildberries"""
+    def __init__(
+        self,
+        source: Literal["wildberries", "alibaba", "ozon"],
+        force_reprocess: bool = False,
+    ):
+        super().__init__(f"parse.{source}")
+        self.source = source
 
-    def __init__(self, name: Literal["wildberries", "alibaba", "ozon"]):
-        super().__init__(f"parse.{name}")
-        self.source = name
-
-    def run(self, request: str, limit: int = 100):
-        """Run task"""
-        task_name = f"parser.tasks.get_goods.{self.source}"
-        parsing_task: AsyncResult = current_app.send_task(
-            task_name,
+    def run(
+        self,
+        request: str,
+        limit: int = 100,
+        chunk_size: int = 10,
+        do_embed: bool = True,
+    ):
+        parse_task = signature(
+            f"parser.tasks.get_goods.{self.source}",
             args=[request],
             kwargs={"limit": limit},
-            queue=f"parse.{self.source}",
+            queue="parser",
         )
-
-        goods: list[GoodDumped] = parsing_task.get()
-
-        for good in goods:
-            good_model = Good.model_validate(good)
-            add_schema = good_model.to_add_schema()
-            db_good = GoodRepository().add(add_schema)
-            good["id"] = db_good.id
-
-        image_tasks = []
-        name_tasks = []
-        name_image_tasks = []
-        for good in goods:
-            image_tasks.append(
-                EmbedAndSaveImageTask().apply_async(
-                    args=[good],
-                )
-            )
-            name_tasks.append(
-                EmbedAndSaveNameTask().apply_async(
-                    args=[good],
-                )
-            )
-            name_image_tasks.append(
-                EmbedAndSaveNameImageTask().apply_async(
-                    args=[good],
-                )
-            )
-
-        for task in image_tasks:
-            task.get()
-        for task in name_tasks:
-            task.get()
-        for task in name_image_tasks:
-            task.get()
-
-        return
+        add_to_db_task = AddGoodsToDBAndFilterTask().signature(queue="agent")
+        embed_and_save_task = EmbedAndSaveGoodsTask().signature(queue="agent")
+        if do_embed:
+            return chain(parse_task, add_to_db_task, embed_and_save_task)()
+        else:
+            return chain(parse_task, add_to_db_task)()
 
 
 def get_tasks() -> BaseTask:
@@ -174,7 +194,8 @@ def get_tasks() -> BaseTask:
         ParseTask("wildberries"),
         ParseTask("alibaba"),
         ParseTask("ozon"),
-        EmbedAndSaveImageTask(),
-        EmbedAndSaveNameTask(),
-        EmbedAndSaveNameImageTask(),
+        AddGoodEmbeddingsToDBTask(),
+        AddGoodsToDBAndFilterTask(),
+        EmbedAndSaveGoodsTask(),
+        ReEmbedAllGoodsTask(),
     ]
