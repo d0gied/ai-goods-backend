@@ -1,21 +1,23 @@
 from functools import lru_cache
 
 from .base import Embedding
-
+from ..models.text import MatchingModel, get_matching_model
 
 class TextEmbedding(Embedding):
     """Text embedding"""
 
-    size: int = 512
+    size: int = 768
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def get_embedding(self, data: str, **kwargs) -> list[float]:
         """Get embedding from data"""
-        # TODO: needs to be implemented
-        pass
-        return [0] * self.size
+
+        model = get_matching_model()
+        emb = model.run(data)
+
+        return emb
 
     def get_embeddings(self, data: list[str], **kwargs) -> list[list[float]]:
         """Get embeddings from data"""
